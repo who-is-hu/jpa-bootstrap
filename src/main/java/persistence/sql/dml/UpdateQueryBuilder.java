@@ -2,6 +2,7 @@ package persistence.sql.dml;
 
 import persistence.sql.mapping.Columns;
 import persistence.sql.mapping.TableData;
+import persistence.sql.mapping.Values;
 
 import java.util.stream.Collectors;
 
@@ -21,7 +22,7 @@ public class UpdateQueryBuilder {
         stringBuilder.append("update ");
         stringBuilder.append(table.getName());
         stringBuilder.append(" set ");
-        stringBuilder.append(valueClause(columns));
+        stringBuilder.append(valueClause(columns, entity));
 
         if (whereBuilder.isEmpty()) {
             return stringBuilder.toString();
@@ -32,10 +33,9 @@ public class UpdateQueryBuilder {
         return stringBuilder.toString();
     }
 
-    private String valueClause(Columns columns) {
-        return columns.getValuesMap()
-                .entrySet()
-                .stream()
+    private String valueClause(Columns columns, Object entity) {
+        Values values = Values.fromEntity(entity, columns);
+        return values.getEntries().stream()
                 .map(entry -> String.format(SET_COLUMN_FORMAT, entry.getKey(), ValueUtil.getValueString(entry.getValue())))
                 .collect(Collectors.joining(", "));
     }

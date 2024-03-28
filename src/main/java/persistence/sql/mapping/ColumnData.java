@@ -7,15 +7,16 @@ import persistence.sql.mapping.exception.GenerationTypeMissingException;
 import java.lang.reflect.Field;
 
 public class ColumnData {
+    private final Field field;
     private final String tableName;
     private final String name;
     private final int type;
-    private Object value;
     private final boolean isPk;
     private final GenerationType generationType;
     private final boolean isNullable;
 
     private ColumnData(
+            Field field,
             String tableName,
             String name,
             int type,
@@ -23,6 +24,7 @@ public class ColumnData {
             GenerationType generationType,
             boolean isNullable
     ) {
+        this.field = field;
         this.tableName = tableName;
         this.name = name;
         this.type = type;
@@ -34,6 +36,7 @@ public class ColumnData {
     public static ColumnData createColumn(String tableName, Field field) {
         Column column = field.getAnnotation(Column.class);
         return new ColumnData(
+                field,
                 tableName,
                 extractName(field, column),
                 extractDataType(field),
@@ -42,40 +45,12 @@ public class ColumnData {
                 extractIsNullable(column)
         );
     }
-
-    public static ColumnData createColumnWithValue(String tableName, Field field, Object object) {
-        ColumnData columnData = createColumn(tableName, field);
-        columnData.setValue(extractValue(field, object));
-        return columnData;
-    }
-
-    public boolean isPrimaryKey() {
-        return isPk;
-    }
-
-    public boolean isNotPrimaryKey() {
-        return !isPk;
-    }
-
-    private void setValue(Object value) {
-        this.value = value;
-    }
-
     private static String extractName(Field field, Column column) {
         String columnName = StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(field.getName()), '_').toLowerCase();
         if (column != null && !column.name().isEmpty()) {
             return column.name();
         }
         return columnName;
-    }
-
-    private static Object extractValue(Field field, Object entity) {
-        try {
-            field.setAccessible(true);
-            return field.get(entity);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private static int extractDataType(Field field) {
@@ -108,8 +83,21 @@ public class ColumnData {
         return String.format("%s.%s", tableName, name);
     }
 
-    public Object getValue() {
-        return value;
+    public boolean isPrimaryKey() {
+        return isPk;
+    }
+
+    public boolean isNotPrimaryKey() {
+        return !isPk;
+    }
+
+    public Object getValue(Object entity) {
+        try {
+            field.setAccessible(true);
+            return field.get(entity);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public int getType() {

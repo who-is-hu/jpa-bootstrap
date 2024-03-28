@@ -106,6 +106,7 @@ class ColumnDataTest {
 
         assertThat(columnData.getName()).isEqualTo("has_not_column");
     }
+
     @Test
     @DisplayName("getValue 테스트")
     void testGetValue() throws Exception {
@@ -114,10 +115,11 @@ class ColumnDataTest {
         testClass.setId(id);
         String fieldName = "id";
 
-        ColumnData columnData =
-                ColumnData.createColumnWithValue(tableData.getName(), TestClass.class.getDeclaredField(fieldName), testClass);
+        ColumnData columnData = ColumnData.createColumn(
+                tableData.getName(),
+                TestClass.class.getDeclaredField(fieldName)
+        );
 
-        assertThat(columnData.getValue()).isEqualTo(id);
+        assertThat(columnData.getValue(testClass)).isEqualTo(id);
     }
-
 }
