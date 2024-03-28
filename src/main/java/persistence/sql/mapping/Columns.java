@@ -38,21 +38,6 @@ public class Columns implements Iterable<ColumnData> {
         return new Columns(columns);
     }
 
-    public static Columns createColumnsWithValue(Object entity) {
-        Class<?> clazz = entity.getClass();
-        checkIsEntity(clazz);
-        TableData table = TableData.from(clazz);
-
-        List<ColumnData> columns = Arrays.stream(clazz.getDeclaredFields())
-                .filter(field -> !field.isAnnotationPresent(Transient.class))
-                .filter(field -> !field.isAnnotationPresent(OneToMany.class))
-                .map(field -> ColumnData.createColumnWithValue(table.getName(), field, entity))
-                .collect(Collectors.toList());
-
-        checkHasPrimaryKey(columns);
-        return new Columns(columns);
-    }
-
     public List<String> getNames() {
         return columns.stream()
                 .filter(ColumnData::isNotPrimaryKey)
@@ -67,17 +52,10 @@ public class Columns implements Iterable<ColumnData> {
                 .collect(Collectors.toList());
     }
 
-    public List<Object> getValues() {
+    public List<ColumnData> getNonPkColumns() {
         return columns.stream()
                 .filter(ColumnData::isNotPrimaryKey)
-                .map(ColumnData::getValue)
                 .collect(Collectors.toList());
-    }
-
-    public Map<String, Object> getValuesMap() {
-        return columns.stream()
-                .filter(ColumnData::isNotPrimaryKey)
-                .collect(Collectors.toMap(ColumnData::getName, ColumnData::getValue));
     }
 
     public ColumnData getPkColumn() {

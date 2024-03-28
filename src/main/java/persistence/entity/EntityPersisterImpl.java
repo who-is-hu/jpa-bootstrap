@@ -25,16 +25,16 @@ public class EntityPersisterImpl implements EntityPersister {
     @Override
     public boolean update(Object entity) {
         TableData table = TableData.from(entity.getClass());
-        Columns columns = Columns.createColumnsWithValue(entity);
+        Columns columns = Columns.createColumns(entity.getClass());
         ColumnData keyColumn = columns.getPkColumn();
 
-        if(keyColumn.getValue() == null) {
+        if(keyColumn.getValue(entity) == null) {
             return false;
         }
 
         UpdateQueryBuilder updateQueryBuilder = new UpdateQueryBuilder(table, columns);
         WhereBuilder whereBuilder = new WhereBuilder();
-        whereBuilder.and(eq(keyColumn.getNameWithTable(), keyColumn.getValue()));
+        whereBuilder.and(eq(keyColumn.getNameWithTable(), keyColumn.getValue(entity)));
 
         jdbcTemplate.execute(updateQueryBuilder.build(entity, whereBuilder));
 
@@ -75,11 +75,11 @@ public class EntityPersisterImpl implements EntityPersister {
     public void delete(Object entity) {
         Class<?> clazz = entity.getClass();
         TableData table = TableData.from(clazz);
-        ColumnData idColumn = Columns.createColumnsWithValue(entity).getPkColumn();
+        ColumnData idColumn = Columns.createColumns(entity.getClass()).getPkColumn();
 
         DeleteQueryBuilder deleteQueryBuilder = new DeleteQueryBuilder(clazz);
         WhereBuilder builder = new WhereBuilder();
-        builder.and(eq(idColumn.getNameWithTable(), idColumn.getValue()));
+        builder.and(eq(idColumn.getNameWithTable(), idColumn.getValue(entity)));
 
         jdbcTemplate.execute(deleteQueryBuilder.build(builder));
     }

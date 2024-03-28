@@ -17,9 +17,9 @@ class InsertQueryBuilderTest {
         String email = "email";
         Person person = new Person(null, nickName, age, email, null);
         String expected = String.format(
-                "insert into users (nick_name, old, email) values ('%s', %s, '%s')",
-                nickName,
+                "insert into users (old, nick_name, email) values (%s, '%s', '%s')",
                 age,
+                nickName,
                 email
         );
 

@@ -15,8 +15,6 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ColumnsTest {
-    private final Person person = new Person(1L, "test", 10, "test", null);
-
     @Test
     @DisplayName("기본키 없으면 에러")
     void throwErrorWhenPrimaryKeyIsNotDefined() {
@@ -41,36 +39,12 @@ class ColumnsTest {
     }
 
     @Test
-    @DisplayName("값 넣으면서 생성 테스트")
-    void testCreateWithValueColumns() {
-        Columns columns = Columns.createColumnsWithValue(person);
-
-        assertSoftly(softly -> {
-            assertThat(columns.getValues()).isNotEmpty();
-            assertThat(columns.getValues().stream().noneMatch(Objects::isNull)).isTrue();
-        });
-    }
-
-    @Test
     public void testGetNames() {
         Columns columns = Columns.createColumns(Person.class);
 
         List<String> names = columns.getNames();
 
         assertThat(names).containsExactly("nick_name", "old", "email");
-    }
-
-    @Test
-    public void testGetValue() {
-        Columns columns = Columns.createColumnsWithValue(person);
-
-        List<Object> names = columns.getValues();
-
-        assertSoftly(softly -> {
-            softly.assertThat(names.get(0)).isEqualTo(person.getName());
-            softly.assertThat(names.get(1)).isEqualTo(person.getAge());
-            softly.assertThat(names.get(2)).isEqualTo(person.getEmail());
-        });
     }
 
     @Test
@@ -86,17 +60,5 @@ class ColumnsTest {
         Columns columns = Columns.createColumns(Person.class);
 
         assertThat(columns.getPkColumnName()).isEqualTo("users.id");
-    }
-
-    @Test
-    public void testGetValuesMap() {
-        Columns columns = Columns.createColumnsWithValue(person);
-
-        assertSoftly(softly -> {
-            Map<String, Object> valuesMap = columns.getValuesMap();
-            softly.assertThat(valuesMap.get("nick_name")).isEqualTo(person.getName());
-            softly.assertThat(valuesMap.get("old")).isEqualTo(person.getAge());
-            softly.assertThat(valuesMap.get("email")).isEqualTo(person.getEmail());
-        });
     }
 }
