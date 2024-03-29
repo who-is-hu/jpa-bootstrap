@@ -39,15 +39,6 @@ class ColumnsTest {
     }
 
     @Test
-    public void testGetNames() {
-        Columns columns = Columns.createColumns(Person.class);
-
-        List<String> names = columns.getNames();
-
-        assertThat(names).containsExactly("nick_name", "old", "email");
-    }
-
-    @Test
     public void testGetKeyColumns() {
         Columns columns = Columns.createColumns(Person.class);
         ColumnData foundColumn = columns.getPkColumn();

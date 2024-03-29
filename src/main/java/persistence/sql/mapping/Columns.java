@@ -9,7 +9,6 @@ import persistence.sql.ddl.exception.IdAnnotationMissingException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Columns implements Iterable<ColumnData> {
@@ -40,14 +39,6 @@ public class Columns implements Iterable<ColumnData> {
 
     public List<String> getNames() {
         return columns.stream()
-                .filter(ColumnData::isNotPrimaryKey)
-                .map(ColumnData::getName)
-                .collect(Collectors.toList());
-    }
-
-    public List<String> getNamesWithTableName() {
-        return columns.stream()
-                .filter(ColumnData::isNotPrimaryKey)
                 .map(ColumnData::getNameWithTable)
                 .collect(Collectors.toList());
     }
