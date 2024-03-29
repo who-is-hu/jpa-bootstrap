@@ -6,7 +6,6 @@ import persistence.sql.mapping.OneToManyData;
 import persistence.sql.mapping.TableData;
 
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 public class SelectQueryBuilder {
     private final TableData table;
@@ -56,9 +55,6 @@ public class SelectQueryBuilder {
     }
 
     private String selectClause(Columns columns) {
-        ArrayList<String> names = new ArrayList<String>();
-        names.add(columns.getPkColumnName());
-        names.addAll(columns.getNamesWithTableName());
-        return String.join(", ", names);
+        return String.join(", ", columns.getNames());
     }
 }
