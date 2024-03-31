@@ -12,7 +12,7 @@ class InFlightMetadataCollectorTest {
     void createMetadataFromEntityClass() throws Exception {
         InFlightMetadataCollector inFlightMetadataCollector = new InFlightMetadataCollector(componentScanner);
 
-        inFlightMetadataCollector.collectMetadata();
+        inFlightMetadataCollector.collectMetadata("persistence.bootstrap");
 
         assertSoftly(softly -> {
             softly.assertThat(inFlightMetadataCollector.getPersistentClass(TestNotEntityClass.class)).isNull();
