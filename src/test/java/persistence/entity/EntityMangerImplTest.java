@@ -29,7 +29,7 @@ class EntityMangerImplTest extends H2DBTestSupport {
             jdbcTemplate,
             personPersistentClass
     );
-    private final EntityLoader entityLoader = new EntityLoader(jdbcTemplate);
+    private final EntityLoader entityLoader = new EntityLoader(jdbcTemplate, personPersistentClass);
     private final PersistenceContext persistenceContext = new PersistenceContextImpl();
     private final EntityEntryContext entityEntryContext = new EntityEntryContext();
     private final EntityEntryFactory entityEntryFactory = new DefaultEntityEntryFactory();

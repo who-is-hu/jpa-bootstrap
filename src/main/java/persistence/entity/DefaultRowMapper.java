@@ -15,12 +15,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class DefaultRowMapper<T> implements RowMapper<T> {
-    private final Class<T> clazz;
+    private final PersistentClass persistentClass;
     private final List<Field> fields;
 
-    public DefaultRowMapper(Class<T> clazz) {
-        this.clazz = clazz;
-        this.fields = getFields(clazz);
+    public DefaultRowMapper(PersistentClass persistentClass) {
+        this.persistentClass = persistentClass;
+        this.fields = getFields(persistentClass.getEntityClass());
     }
 
     private List<Field> getFields(Class<?> clazz) {
@@ -32,9 +32,9 @@ public class DefaultRowMapper<T> implements RowMapper<T> {
 
     @Override
     public T mapRow(ResultSet resultSet) throws SQLException {
-        Object entity = createEntity(clazz);
-        TableData table = TableData.from(clazz);
-        Associations associations = Associations.fromEntityClass(clazz);
+        Object entity = this.persistentClass.createEntity();
+        TableData table = persistentClass.getTable();
+        Associations associations = persistentClass.getAssociations();
 
         for (Field field : fields) {
             ColumnData columnData = ColumnData.createColumn(table.getName(), field);
@@ -62,30 +62,20 @@ public class DefaultRowMapper<T> implements RowMapper<T> {
     }
 
     private List<Object> getChildren(OneToManyData association, ResultSet resultSet) throws SQLException {
-        Class<?> referenceEntityClazz = association.getReferenceEntityClazz();
-        TableData table = TableData.from(referenceEntityClazz);
+        PersistentClass persistentClass = association.getReferencePersistentClass();
 
         final List<Object> children = new ArrayList<>();
 
         do {
-            Object childEntity = createEntity(referenceEntityClazz);
-            for (Field field : getFields(referenceEntityClazz)) {
+            Object childEntity = persistentClass.createEntity();
+            for (Field field : getFields(persistentClass.getEntityClass())) {
                 field.setAccessible(true);
-                ColumnData column = ColumnData.createColumn(table.getName(), field);
+                ColumnData column = ColumnData.createColumn(persistentClass.getTableName(), field);
                 innerSet(childEntity, field, resultSet.getObject(column.getNameWithTable()));
             }
             children.add(childEntity);
         } while (resultSet.next());
         return children;
-    }
-
-    private Object createEntity(Class<?> clazz) throws SQLException {
-        try {
-            return clazz.getConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                 NoSuchMethodException e) {
-            throw new SQLException(e);
-        }
     }
 
     private void innerSet(Object entity, Field field, Object value) throws SQLException {

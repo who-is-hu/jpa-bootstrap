@@ -7,10 +7,7 @@ import persistence.entity.DefaultRowMapper;
 import persistence.sql.dml.BooleanExpression;
 import persistence.sql.dml.SelectQueryBuilder;
 import persistence.sql.dml.WhereBuilder;
-import persistence.sql.mapping.Associations;
-import persistence.sql.mapping.Columns;
-import persistence.sql.mapping.OneToManyData;
-import persistence.sql.mapping.TableData;
+import persistence.sql.mapping.*;
 
 import java.util.Collection;
 
@@ -30,17 +27,14 @@ public class CollectionLoader {
     }
 
     public <T> Collection<T> loadCollection(Object parentId) {
-        Class<T> clazz = (Class<T>) association.getReferenceEntityClazz();
-        TableData table = TableData.from(clazz);
-        Columns columns = Columns.createColumns(clazz);
-        Associations associations = Associations.fromEntityClass(clazz);
+        PersistentClass persistentClass = association.getReferencePersistentClass();
 
-        SelectQueryBuilder selectQueryBuilder = new SelectQueryBuilder(table, columns, associations);
+        SelectQueryBuilder selectQueryBuilder = new SelectQueryBuilder(persistentClass);
         WhereBuilder whereBuilder = new WhereBuilder();
         whereBuilder.and(BooleanExpression.eq(association.getJoinColumnName(), parentId));
         String query = selectQueryBuilder.build(whereBuilder);
 
         logger.debug("query: {}", query);
-        return jdbcTemplate.query(query, new DefaultRowMapper<T>(clazz));
+        return jdbcTemplate.query(query, new DefaultRowMapper<T>(persistentClass));
     }
 }

@@ -1,9 +1,6 @@
 package persistence.sql.dml;
 
-import persistence.sql.mapping.Associations;
-import persistence.sql.mapping.Columns;
-import persistence.sql.mapping.OneToManyData;
-import persistence.sql.mapping.TableData;
+import persistence.sql.mapping.*;
 
 import java.util.ArrayList;
 
@@ -12,10 +9,10 @@ public class SelectQueryBuilder {
     private final Columns columns;
     private final Associations associations;
 
-    public SelectQueryBuilder(TableData table, Columns columns, Associations associations) {
-        this.table = table;
-        this.columns = columns;
-        this.associations = associations;
+    public SelectQueryBuilder(PersistentClass persistentClass) {
+        this.table = persistentClass.getTable();
+        this.columns = persistentClass.getColumns();
+        this.associations = persistentClass.getAssociations();
     }
 
     public String build(WhereBuilder whereBuilder) {
@@ -47,7 +44,7 @@ public class SelectQueryBuilder {
         StringBuilder stringBuilder = new StringBuilder();
         for(OneToManyData association : associations.getEagerAssociations()) {
             stringBuilder.append(", ");
-            String line = selectClause(Columns.createColumns(association.getReferenceEntityClazz()));
+            String line = selectClause(association.getReferencePersistentClass().getColumns());
             stringBuilder.append(line);
         }
 

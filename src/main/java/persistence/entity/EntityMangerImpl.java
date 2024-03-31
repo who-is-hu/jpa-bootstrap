@@ -39,7 +39,7 @@ public class EntityMangerImpl implements EntityManger {
         EntityEntry entityEntry = entityEntryFactory.createEntityEntry(Status.LOADING);
         entityEntryContext.addEntry(entityKey, entityEntry);
 
-        T foundEntity = entityLoader.find(clazz, id);
+        T foundEntity = entityLoader.find(id);
         persistenceContext.addEntity(entityKey, foundEntity);
 
         entityEntry.setManaged();

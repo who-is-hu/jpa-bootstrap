@@ -22,12 +22,9 @@ class DMLQueryGeneratorH2DbTest {
     private static JdbcTemplate jdbcTemplate;
     private static DatabaseServer server;
     private final PersistentClass personPersistentClass = PersistentClass.from(Person.class);
-    private final TableData tableData = TableData.from(Person.class);
-    private final Columns columns = Columns.createColumns(Person.class);
-    private final Associations associations = Associations.fromEntityClass(Person.class);
     private final DropQueryBuilder dropQueryBuilder = new DropQueryBuilder(Person.class);
     private final CreateQueryBuilder createQueryBuilder = new CreateQueryBuilder(new H2Dialect(), Person.class);;
-    private final SelectQueryBuilder selectQueryBuilder = new SelectQueryBuilder(tableData, columns, associations);
+    private final SelectQueryBuilder selectQueryBuilder = new SelectQueryBuilder(personPersistentClass);
     private final InsertQueryBuilder insertQueryBuilder = new InsertQueryBuilder(personPersistentClass);
 
     @BeforeAll

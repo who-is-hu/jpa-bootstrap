@@ -19,7 +19,7 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 class EntityLoaderTest extends H2DBTestSupport {
     private final PersistentClass personPersistentClass = PersistentClass.from(Person.class);
-    private final EntityLoader entityLoader = new EntityLoader(jdbcTemplate);
+    private final EntityLoader entityLoader = new EntityLoader(jdbcTemplate, personPersistentClass);
 
     @BeforeEach
     public void setUp() {
@@ -39,7 +39,7 @@ class EntityLoaderTest extends H2DBTestSupport {
         Person person = new Person(null, "nick_name", 10, "email", null);
         jdbcTemplate.execute(new InsertQueryBuilder(personPersistentClass).build(person));
 
-        Person findPerson = entityLoader.find(Person.class, 1L);
+        Person findPerson = entityLoader.find(1L);
 
         assertSoftly(softly -> {
             softly.assertThat(findPerson.getId()).isEqualTo(1L);

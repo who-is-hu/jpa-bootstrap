@@ -6,6 +6,7 @@ import persistence.Order;
 import persistence.Person;
 import persistence.sql.mapping.Associations;
 import persistence.sql.mapping.Columns;
+import persistence.sql.mapping.PersistentClass;
 import persistence.sql.mapping.TableData;
 
 import static org.assertj.core.api.Assertions.as;
@@ -13,10 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static persistence.sql.dml.BooleanExpression.eq;
 
 class SelectQueryBuilderTest {
-    private final Columns columns = Columns.createColumns(Person.class);
-    private final TableData table = TableData.from(Person.class);
-    private final Associations associations = Associations.fromEntityClass(Person.class);
-    private final SelectQueryBuilder selectQueryBuilder = new SelectQueryBuilder(table, columns, associations);
+    private final SelectQueryBuilder selectQueryBuilder = new SelectQueryBuilder(PersistentClass.from(Person.class));
 
     @Test
     @DisplayName("요구사항2: findAll 쿼리 생성")
@@ -43,10 +41,7 @@ class SelectQueryBuilderTest {
     @Test
     @DisplayName("join 쿼리 생성 테스트")
     void testFindWithJoin() {
-        Columns columns = Columns.createColumns(Order.class);
-        TableData table = TableData.from(Order.class);
-        Associations associations = Associations.fromEntityClass(Order.class);
-        SelectQueryBuilder sut = new SelectQueryBuilder(table, columns, associations);
+        SelectQueryBuilder sut = new SelectQueryBuilder(PersistentClass.from(Order.class));
         int id = 1;
         String expected = String.format(
                 "select orders.id, orders.order_number, order_items.id, order_items.product, order_items.quantity from orders join order_items on orders.id = order_items.order_id where id = %s",
