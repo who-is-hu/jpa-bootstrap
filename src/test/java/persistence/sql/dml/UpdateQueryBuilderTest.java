@@ -1,10 +1,8 @@
 package persistence.sql.dml;
 
 import org.junit.jupiter.api.Test;
-import persistence.Person;
-import persistence.sql.mapping.Columns;
+import persistence.model.Person;
 import persistence.sql.mapping.PersistentClass;
-import persistence.sql.mapping.TableData;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

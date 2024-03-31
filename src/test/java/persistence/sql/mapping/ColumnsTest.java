@@ -2,16 +2,11 @@ package persistence.sql.mapping;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import persistence.Person;
+import persistence.model.Person;
 import persistence.sql.ddl.exception.AnnotationMissingException;
 import persistence.sql.ddl.exception.IdAnnotationMissingException;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ColumnsTest {

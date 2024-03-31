@@ -4,15 +4,12 @@ import database.DatabaseServer;
 import database.H2;
 import jdbc.JdbcTemplate;
 import org.junit.jupiter.api.*;
-import persistence.Person;
+import persistence.model.Person;
 import persistence.PersonRowMapper;
 import persistence.sql.ddl.CreateQueryBuilder;
 import persistence.sql.ddl.DropQueryBuilder;
 import persistence.sql.dialect.H2Dialect;
-import persistence.sql.mapping.Associations;
-import persistence.sql.mapping.Columns;
 import persistence.sql.mapping.PersistentClass;
-import persistence.sql.mapping.TableData;
 
 import java.util.List;
 

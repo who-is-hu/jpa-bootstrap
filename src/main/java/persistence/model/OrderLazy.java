@@ -1,13 +1,12 @@
-package persistence;
+package persistence.model;
 
 import jakarta.persistence.*;
 
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "orders")
-public class OrderLazySet {
+public class OrderLazy {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,7 +16,7 @@ public class OrderLazySet {
 
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
-    private Set<OrderItem> orderItems;
+    private List<OrderItem> orderItems;
 
     public Long getId() {
         return id;
@@ -27,7 +26,7 @@ public class OrderLazySet {
         return orderNumber;
     }
 
-    public Set<OrderItem> getOrderItems() {
+    public List<OrderItem> getOrderItems() {
         return orderItems;
     }
 }
