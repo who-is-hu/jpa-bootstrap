@@ -3,6 +3,7 @@ package persistence.sql.dml;
 import org.junit.jupiter.api.Test;
 import persistence.Person;
 import persistence.sql.mapping.Columns;
+import persistence.sql.mapping.PersistentClass;
 import persistence.sql.mapping.TableData;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,8 +19,7 @@ class UpdateQueryBuilderTest {
                 person.getId()
         );
         Class<?> clazz = Person.class;
-        UpdateQueryBuilder updateQueryBuilder
-                = new UpdateQueryBuilder(TableData.from(clazz), Columns.createColumns(Person.class));
+        UpdateQueryBuilder updateQueryBuilder = new UpdateQueryBuilder(PersistentClass.from(Person.class));
         WhereBuilder whereBuilder = new WhereBuilder();
         whereBuilder.and(BooleanExpression.eq("id", 1L));
 

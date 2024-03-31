@@ -12,6 +12,7 @@ import persistence.sql.ddl.DropQueryBuilder;
 import persistence.sql.dialect.H2Dialect;
 import persistence.sql.dml.InsertQueryBuilder;
 import persistence.sql.dml.WhereBuilder;
+import persistence.sql.mapping.PersistentClass;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
@@ -19,7 +20,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static persistence.sql.dml.BooleanExpression.eq;
 
 class EntityPersisterTest extends H2DBTestSupport {
-    private final EntityPersister entityPersister = new EntityPersisterImpl(new H2GeneratedIdObtainStrategy(), jdbcTemplate);
+    private final EntityPersister entityPersister = new EntityPersisterImpl(
+            new H2GeneratedIdObtainStrategy(),
+            jdbcTemplate,
+            PersistentClass.from(Person.class)
+    );
 
     @BeforeEach
     public void setUp() {

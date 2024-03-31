@@ -1,11 +1,15 @@
 package persistence.entity;
 
 import jakarta.persistence.Id;
+import jdbc.JdbcTemplate;
 import persistence.sql.ddl.exception.IdAnnotationMissingException;
-import persistence.sql.dml.*;
+import persistence.sql.dml.DeleteQueryBuilder;
+import persistence.sql.dml.InsertQueryBuilder;
+import persistence.sql.dml.UpdateQueryBuilder;
+import persistence.sql.dml.WhereBuilder;
 import persistence.sql.mapping.ColumnData;
 import persistence.sql.mapping.Columns;
-import jdbc.JdbcTemplate;
+import persistence.sql.mapping.PersistentClass;
 import persistence.sql.mapping.TableData;
 
 import java.lang.reflect.Field;
@@ -16,23 +20,27 @@ import static persistence.sql.dml.BooleanExpression.eq;
 public class EntityPersisterImpl implements EntityPersister {
     private final GeneratedIdObtainStrategy generatedIdObtainStrategy;
     private final JdbcTemplate jdbcTemplate;
+    private final PersistentClass persistentClass;
 
-    public EntityPersisterImpl(GeneratedIdObtainStrategy generatedIdObtainStrategy, JdbcTemplate jdbcTemplate) {
+    public EntityPersisterImpl(
+            GeneratedIdObtainStrategy generatedIdObtainStrategy,
+            JdbcTemplate jdbcTemplate,
+            PersistentClass persistentClass
+    ) {
         this.generatedIdObtainStrategy = generatedIdObtainStrategy;
         this.jdbcTemplate = jdbcTemplate;
+        this.persistentClass = persistentClass;
     }
 
     @Override
     public boolean update(Object entity) {
-        TableData table = TableData.from(entity.getClass());
-        Columns columns = Columns.createColumns(entity.getClass());
-        ColumnData keyColumn = columns.getPkColumn();
+        ColumnData keyColumn = persistentClass.getPkColumn();
 
         if(keyColumn.getValue(entity) == null) {
             return false;
         }
 
-        UpdateQueryBuilder updateQueryBuilder = new UpdateQueryBuilder(table, columns);
+        UpdateQueryBuilder updateQueryBuilder = new UpdateQueryBuilder(persistentClass);
         WhereBuilder whereBuilder = new WhereBuilder();
         whereBuilder.and(eq(keyColumn.getNameWithTable(), keyColumn.getValue(entity)));
 
@@ -44,7 +52,7 @@ public class EntityPersisterImpl implements EntityPersister {
     @Override
     public void insert(Object entity) {
         Class<?> clazz = entity.getClass();
-        InsertQueryBuilder insertQueryBuilder = new InsertQueryBuilder(clazz);
+        InsertQueryBuilder insertQueryBuilder = new InsertQueryBuilder(PersistentClass.from(clazz));
 
         jdbcTemplate.execute(insertQueryBuilder.build(entity));
 

@@ -13,4 +13,20 @@ public class PersistentClass {
         Columns columns = Columns.createColumns(clazz);
         return new PersistentClass(table, columns);
     }
+
+    public TableData getTable() {
+        return table;
+    }
+
+    public Columns getColumns() {
+        return columns;
+    }
+
+    public ColumnData getPkColumn() {
+        return columns.getPkColumn();
+    }
+
+    public String getTableName() {
+        return table.getName();
+    }
 }

@@ -14,6 +14,7 @@ import persistence.sql.ddl.CreateQueryBuilder;
 import persistence.sql.ddl.DropQueryBuilder;
 import persistence.sql.dialect.H2Dialect;
 import persistence.sql.dml.InsertQueryBuilder;
+import persistence.sql.mapping.PersistentClass;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
@@ -22,7 +23,11 @@ import static org.mockito.Mockito.*;
 
 
 class EntityMangerImplTest extends H2DBTestSupport {
-    private final EntityPersister entityPersister = new EntityPersisterImpl(new H2GeneratedIdObtainStrategy(), jdbcTemplate);
+    private final EntityPersister entityPersister = new EntityPersisterImpl(
+            new H2GeneratedIdObtainStrategy(),
+            jdbcTemplate,
+            PersistentClass.from(Person.class)
+    );
     private final EntityLoader entityLoader = new EntityLoader(jdbcTemplate);
     private final PersistenceContext persistenceContext = new PersistenceContextImpl();
     private final EntityEntryContext entityEntryContext = new EntityEntryContext();
