@@ -12,12 +12,14 @@ import persistence.sql.ddl.CreateQueryBuilder;
 import persistence.sql.ddl.DropQueryBuilder;
 import persistence.sql.dialect.H2Dialect;
 import persistence.sql.dml.InsertQueryBuilder;
+import persistence.sql.mapping.PersistentClass;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 class EntityLoaderTest extends H2DBTestSupport {
-    EntityLoader entityLoader = new EntityLoader(jdbcTemplate);
+    private final PersistentClass personPersistentClass = PersistentClass.from(Person.class);
+    private final EntityLoader entityLoader = new EntityLoader(jdbcTemplate);
 
     @BeforeEach
     public void setUp() {
@@ -35,7 +37,7 @@ class EntityLoaderTest extends H2DBTestSupport {
     @Test
     void testFind() {
         Person person = new Person(null, "nick_name", 10, "email", null);
-        jdbcTemplate.execute(new InsertQueryBuilder(Person.class).build(person));
+        jdbcTemplate.execute(new InsertQueryBuilder(personPersistentClass).build(person));
 
         Person findPerson = entityLoader.find(Person.class, 1L);
 

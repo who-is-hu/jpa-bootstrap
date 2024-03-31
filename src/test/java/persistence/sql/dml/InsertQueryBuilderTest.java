@@ -3,11 +3,12 @@ package persistence.sql.dml;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import persistence.Person;
+import persistence.sql.mapping.PersistentClass;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class InsertQueryBuilderTest {
-    InsertQueryBuilder insertQueryBuilder = new InsertQueryBuilder(Person.class);
+    InsertQueryBuilder insertQueryBuilder = new InsertQueryBuilder(PersistentClass.from(Person.class));
 
     @Test
     @DisplayName("요구사항1: insert 쿼리 생성")

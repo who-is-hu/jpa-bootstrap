@@ -23,10 +23,11 @@ import static org.mockito.Mockito.*;
 
 
 class EntityMangerImplTest extends H2DBTestSupport {
+    private final PersistentClass personPersistentClass = PersistentClass.from(Person.class);
     private final EntityPersister entityPersister = new EntityPersisterImpl(
             new H2GeneratedIdObtainStrategy(),
             jdbcTemplate,
-            PersistentClass.from(Person.class)
+            personPersistentClass
     );
     private final EntityLoader entityLoader = new EntityLoader(jdbcTemplate);
     private final PersistenceContext persistenceContext = new PersistenceContextImpl();
@@ -39,7 +40,7 @@ class EntityMangerImplTest extends H2DBTestSupport {
             entityEntryContext,
             entityEntryFactory
     );
-    private final InsertQueryBuilder insertQueryBuilder = new InsertQueryBuilder(Person.class);
+    private final InsertQueryBuilder insertQueryBuilder = new InsertQueryBuilder(personPersistentClass);
 
 
     @BeforeEach

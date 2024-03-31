@@ -20,10 +20,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static persistence.sql.dml.BooleanExpression.eq;
 
 class EntityPersisterTest extends H2DBTestSupport {
+    private final PersistentClass personPersistentClass = PersistentClass.from(Person.class);
     private final EntityPersister entityPersister = new EntityPersisterImpl(
             new H2GeneratedIdObtainStrategy(),
             jdbcTemplate,
-            PersistentClass.from(Person.class)
+            personPersistentClass
     );
 
     @BeforeEach
@@ -56,7 +57,7 @@ class EntityPersisterTest extends H2DBTestSupport {
     void testUpdate() {
         final String newName = "new_nick_name";
         Person person = new Person(null, "nick_name", 10, "email", null);
-        jdbcTemplate.execute(new InsertQueryBuilder(Person.class).build(person));
+        jdbcTemplate.execute(new InsertQueryBuilder(personPersistentClass).build(person));
         person.setId(1L);
 
         person.changeName(newName);
@@ -75,7 +76,7 @@ class EntityPersisterTest extends H2DBTestSupport {
     void testDelete() {
         final String newName = "new_nick_name";
         Person person = new Person(null, "nick_name", 10, "email", null);
-        jdbcTemplate.execute(new InsertQueryBuilder(Person.class).build(person));
+        jdbcTemplate.execute(new InsertQueryBuilder(personPersistentClass).build(person));
         person.setId(1L);
 
         entityPersister.delete(person);
