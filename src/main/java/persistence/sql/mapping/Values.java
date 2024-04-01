@@ -13,7 +13,7 @@ public class Values {
     public static Values fromEntity(Object entity, Columns columns) {
         Map<String, Object> map = columns.getNonPkColumns()
                 .stream()
-                .collect(Collectors.toMap(ColumnData::getName, (columnData -> columnData.getValue(entity))));
+                .collect(Collectors.toMap(Column::getName, (columnData -> columnData.getValue(entity))));
         return new Values(map);
     }
 

@@ -1,15 +1,14 @@
 package persistence.sql.mapping;
 
 import java.lang.reflect.InvocationTargetException;
-import java.sql.SQLException;
 
 public class PersistentClass {
     private final Class<?> entityClass;
-    private final TableData table;
+    private final Table table;
     private final Columns columns;
     private final Associations associations;
 
-    private PersistentClass(Class<?> entityClass, TableData table, Columns columns, Associations associations) {
+    private PersistentClass(Class<?> entityClass, Table table, Columns columns, Associations associations) {
         this.entityClass = entityClass;
         this.table = table;
         this.columns = columns;
@@ -19,7 +18,7 @@ public class PersistentClass {
     public static PersistentClass from(Class<?> clazz) {
         return new PersistentClass(
                 clazz,
-                TableData.from(clazz),
+                Table.from(clazz),
                 Columns.createColumns(clazz),
                 Associations.fromEntityClass(clazz)
         );
@@ -29,7 +28,7 @@ public class PersistentClass {
         return this.entityClass;
     }
 
-    public TableData getTable() {
+    public Table getTable() {
         return table;
     }
 
@@ -41,7 +40,7 @@ public class PersistentClass {
         return associations;
     }
 
-    public ColumnData getPkColumn() {
+    public Column getPkColumn() {
         return columns.getPkColumn();
     }
 

@@ -6,7 +6,6 @@ import jdbc.RowMapper;
 import persistence.sql.mapping.*;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -33,12 +32,12 @@ public class DefaultRowMapper<T> implements RowMapper<T> {
     @Override
     public T mapRow(ResultSet resultSet) throws SQLException {
         Object entity = this.persistentClass.createEntity();
-        TableData table = persistentClass.getTable();
+        Table table = persistentClass.getTable();
         Associations associations = persistentClass.getAssociations();
 
         for (Field field : fields) {
-            ColumnData columnData = ColumnData.createColumn(table.getName(), field);
-            setValue(entity, field, columnData, resultSet);
+            Column column = Column.createColumn(table.getName(), field);
+            setValue(entity, field, column, resultSet);
         }
 
         if (associations.hasEagerLoad()) {
@@ -56,9 +55,9 @@ public class DefaultRowMapper<T> implements RowMapper<T> {
         }
     }
 
-    private void setValue(Object entity, Field field, ColumnData columnData, ResultSet resultSet) throws SQLException {
+    private void setValue(Object entity, Field field, Column column, ResultSet resultSet) throws SQLException {
         field.setAccessible(true);
-        innerSet(entity, field, resultSet.getObject(columnData.getNameWithTable()));
+        innerSet(entity, field, resultSet.getObject(column.getNameWithTable()));
     }
 
     private List<Object> getChildren(OneToManyData association, ResultSet resultSet) throws SQLException {
@@ -70,7 +69,7 @@ public class DefaultRowMapper<T> implements RowMapper<T> {
             Object childEntity = persistentClass.createEntity();
             for (Field field : getFields(persistentClass.getEntityClass())) {
                 field.setAccessible(true);
-                ColumnData column = ColumnData.createColumn(persistentClass.getTableName(), field);
+                Column column = Column.createColumn(persistentClass.getTableName(), field);
                 innerSet(childEntity, field, resultSet.getObject(column.getNameWithTable()));
             }
             children.add(childEntity);

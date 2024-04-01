@@ -28,10 +28,10 @@ class TestClass {
 
     private Long nullable;
 
-    @Column(nullable = false)
+    @jakarta.persistence.Column(nullable = false)
     private Long notNullable;
 
-    @Column(name = "has_column")
+    @jakarta.persistence.Column(name = "has_column")
     private Long hasColumn;
 
     private Long hasNotColumn;
@@ -46,7 +46,7 @@ class ColumnDataTest {
 
     private static final String GENERATED_VALUE_FIELD_NAME = "generated";
     private static final String NOT_GENERATED_VALUE_FIELD_NAME = "notGenerated";
-    private final TableData tableData = TableData.from(TestClass.class);
+    private final Table table = Table.from(TestClass.class);
 
     @ParameterizedTest()
     @CsvSource({
@@ -55,27 +55,27 @@ class ColumnDataTest {
     })
     @DisplayName("hasGenerationType 테스트")
     void testHasGenerationType(String fieldName, boolean expected) throws Exception {
-        ColumnData columnData = ColumnData.createColumn(tableData.getName(), TestClass.class.getDeclaredField(fieldName));
+        Column column = Column.createColumn(table.getName(), TestClass.class.getDeclaredField(fieldName));
 
-        assertThat(columnData.hasGenerationType()).isEqualTo(expected);
+        assertThat(column.hasGenerationType()).isEqualTo(expected);
     }
 
     @Test
     @DisplayName("GeneratedValue 아닌데 getGenerationType 호출시 에러")
     void errorWhenGetGenerationTypeInvokedButIsNotGeneratedValue() throws Exception {
-        ColumnData columnData =
-                ColumnData.createColumn(tableData.getName(), TestClass.class.getDeclaredField(NOT_GENERATED_VALUE_FIELD_NAME));
+        Column column =
+                Column.createColumn(table.getName(), TestClass.class.getDeclaredField(NOT_GENERATED_VALUE_FIELD_NAME));
 
-        assertThrows(GenerationTypeMissingException.class, columnData::getGenerationType);
+        assertThrows(GenerationTypeMissingException.class, column::getGenerationType);
     }
 
     @Test
     @DisplayName("getGenerationType 테스트")
     void testGetGenerationType() throws Exception {
-        ColumnData columnData =
-                ColumnData.createColumn(tableData.getName(), TestClass.class.getDeclaredField(GENERATED_VALUE_FIELD_NAME));
+        Column column =
+                Column.createColumn(table.getName(), TestClass.class.getDeclaredField(GENERATED_VALUE_FIELD_NAME));
 
-        assertThat(columnData.getGenerationType()).isNotNull();
+        assertThat(column.getGenerationType()).isNotNull();
     }
 
     @ParameterizedTest
@@ -85,26 +85,26 @@ class ColumnDataTest {
     })
     @DisplayName("isNotNullable 테스트")
     void testIsNullable(String fieldName, boolean expected) throws Exception {
-        ColumnData columnData = ColumnData.createColumn(tableData.getName(), TestClass.class.getDeclaredField(fieldName));
+        Column column = Column.createColumn(table.getName(), TestClass.class.getDeclaredField(fieldName));
 
-        assertThat(columnData.isNotNullable()).isEqualTo(expected);
+        assertThat(column.isNotNullable()).isEqualTo(expected);
     }
 
     @Test
     @DisplayName("getName: 재정의 된 컬럼이름 있을시 필드명 대신 반환.")
     void testGetColumnNameWithAnnotation() throws Exception {
-        ColumnData columnData = ColumnData.createColumn(tableData.getName(), TestClass.class.getDeclaredField("hasColumn"));
+        Column column = Column.createColumn(table.getName(), TestClass.class.getDeclaredField("hasColumn"));
 
-        assertThat(columnData.getName()).isEqualTo("has_column");
+        assertThat(column.getName()).isEqualTo("has_column");
     }
 
     @Test
     @DisplayName("getName: 재정의 된 컬럼이름 없으면 필드명 반환.")
     void testGetColumnName() throws Exception {
         String fieldName = "hasNotColumn";
-        ColumnData columnData = ColumnData.createColumn(tableData.getName(), TestClass.class.getDeclaredField(fieldName));
+        Column column = Column.createColumn(table.getName(), TestClass.class.getDeclaredField(fieldName));
 
-        assertThat(columnData.getName()).isEqualTo("has_not_column");
+        assertThat(column.getName()).isEqualTo("has_not_column");
     }
 
     @Test
@@ -115,11 +115,11 @@ class ColumnDataTest {
         testClass.setId(id);
         String fieldName = "id";
 
-        ColumnData columnData = ColumnData.createColumn(
-                tableData.getName(),
+        Column column = Column.createColumn(
+                table.getName(),
                 TestClass.class.getDeclaredField(fieldName)
         );
 
-        assertThat(columnData.getValue(testClass)).isEqualTo(id);
+        assertThat(column.getValue(testClass)).isEqualTo(id);
     }
 }

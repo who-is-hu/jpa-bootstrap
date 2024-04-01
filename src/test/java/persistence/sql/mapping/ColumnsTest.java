@@ -36,7 +36,7 @@ class ColumnsTest {
     @Test
     public void testGetKeyColumns() {
         Columns columns = Columns.createColumns(Person.class);
-        ColumnData foundColumn = columns.getPkColumn();
+        Column foundColumn = columns.getPkColumn();
 
         assertThat(foundColumn.isPrimaryKey()).isTrue();
     }

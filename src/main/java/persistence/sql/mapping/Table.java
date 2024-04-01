@@ -1,20 +1,18 @@
 package persistence.sql.mapping;
 
-import jakarta.persistence.Table;
-
-public class TableData {
+public class Table {
     private final String name;
 
-    private TableData(String name) {
+    private Table(String name) {
         this.name = name;
     }
 
-    public static TableData from(Class<?> entityClazz) {
-        return new TableData(extractName(entityClazz));
+    public static Table from(Class<?> entityClazz) {
+        return new Table(extractName(entityClazz));
     }
 
     private static String extractName(Class<?> entityClazz) {
-        Table table = entityClazz.getAnnotation(Table.class);
+        jakarta.persistence.Table table = entityClazz.getAnnotation(jakarta.persistence.Table.class);
         if (table == null) {
             return entityClazz.getSimpleName().toLowerCase();
         }
