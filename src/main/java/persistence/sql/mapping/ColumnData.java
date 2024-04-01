@@ -100,6 +100,10 @@ public class ColumnData {
         }
     }
 
+    public boolean hasNotValue(Object entity) {
+        return getValue(entity) == null;
+    }
+
     public int getType() {
         return type;
     }

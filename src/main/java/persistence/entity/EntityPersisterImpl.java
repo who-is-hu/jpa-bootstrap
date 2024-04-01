@@ -36,7 +36,7 @@ public class EntityPersisterImpl implements EntityPersister {
     public boolean update(Object entity) {
         ColumnData keyColumn = persistentClass.getPkColumn();
 
-        if(keyColumn.getValue(entity) == null) {
+        if(keyColumn.hasNotValue(entity)) {
             return false;
         }
 
