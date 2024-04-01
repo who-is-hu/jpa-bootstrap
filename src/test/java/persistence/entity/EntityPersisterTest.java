@@ -5,13 +5,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import persistence.H2DBTestSupport;
-import persistence.Person;
+import persistence.model.Person;
 import persistence.PersonRowMapper;
 import persistence.sql.ddl.CreateQueryBuilder;
 import persistence.sql.ddl.DropQueryBuilder;
 import persistence.sql.dialect.H2Dialect;
 import persistence.sql.dml.InsertQueryBuilder;
 import persistence.sql.dml.WhereBuilder;
+import persistence.sql.mapping.PersistentClass;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
@@ -19,7 +20,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static persistence.sql.dml.BooleanExpression.eq;
 
 class EntityPersisterTest extends H2DBTestSupport {
-    private final EntityPersister entityPersister = new EntityPersisterImpl(new H2GeneratedIdObtainStrategy(), jdbcTemplate);
+    private final PersistentClass personPersistentClass = PersistentClass.from(Person.class);
+    private final EntityPersister entityPersister = new EntityPersisterImpl(
+            new H2GeneratedIdObtainStrategy(),
+            jdbcTemplate,
+            personPersistentClass
+    );
 
     @BeforeEach
     public void setUp() {
@@ -51,7 +57,7 @@ class EntityPersisterTest extends H2DBTestSupport {
     void testUpdate() {
         final String newName = "new_nick_name";
         Person person = new Person(null, "nick_name", 10, "email", null);
-        jdbcTemplate.execute(new InsertQueryBuilder(Person.class).build(person));
+        jdbcTemplate.execute(new InsertQueryBuilder(personPersistentClass).build(person));
         person.setId(1L);
 
         person.changeName(newName);
@@ -70,7 +76,7 @@ class EntityPersisterTest extends H2DBTestSupport {
     void testDelete() {
         final String newName = "new_nick_name";
         Person person = new Person(null, "nick_name", 10, "email", null);
-        jdbcTemplate.execute(new InsertQueryBuilder(Person.class).build(person));
+        jdbcTemplate.execute(new InsertQueryBuilder(personPersistentClass).build(person));
         person.setId(1L);
 
         entityPersister.delete(person);

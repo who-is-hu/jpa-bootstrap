@@ -4,7 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import persistence.Person;
+import persistence.model.Person;
 import persistence.entity.context.EntityKey;
 import persistence.entity.context.PersistenceContext;
 import persistence.entity.context.PersistenceContextImpl;

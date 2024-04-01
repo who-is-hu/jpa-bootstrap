@@ -1,6 +1,7 @@
 package persistence;
 
 import jdbc.RowMapper;
+import persistence.model.Person;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

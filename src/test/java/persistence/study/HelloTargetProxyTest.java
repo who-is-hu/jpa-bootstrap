@@ -5,7 +5,7 @@ import net.sf.cglib.proxy.LazyLoader;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 import org.junit.jupiter.api.Test;
-import persistence.Person;
+import persistence.model.Person;
 
 import java.lang.reflect.Method;
 

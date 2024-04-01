@@ -15,9 +15,9 @@ public class EntityKey {
     }
 
     public static EntityKey fromEntity(Object entity){
-        Columns columns = Columns.createColumnsWithValue(entity);
+        Columns columns = Columns.createColumns(entity.getClass());
         ColumnData keyColumn = columns.getPkColumn();
-        return new EntityKey(entity.getClass(), keyColumn.getValue());
+        return new EntityKey(entity.getClass(), keyColumn.getValue(entity));
     }
 
     @Override

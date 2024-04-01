@@ -1,11 +1,12 @@
 package persistence.entity;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import persistence.H2DBTestSupport;
-import persistence.Person;
+import persistence.model.Person;
+import persistence.bootstrap.ComponentScanner;
+import persistence.bootstrap.InFlightMetadataCollector;
+import persistence.bootstrap.MetaModel;
+import persistence.bootstrap.MetaModelImpl;
 import persistence.entity.context.*;
 import persistence.entity.exception.EntityAlreadyExistsException;
 import persistence.entity.exception.EntityNotExistsException;
@@ -14,6 +15,7 @@ import persistence.sql.ddl.CreateQueryBuilder;
 import persistence.sql.ddl.DropQueryBuilder;
 import persistence.sql.dialect.H2Dialect;
 import persistence.sql.dml.InsertQueryBuilder;
+import persistence.sql.mapping.PersistentClass;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
@@ -22,20 +24,25 @@ import static org.mockito.Mockito.*;
 
 
 class EntityMangerImplTest extends H2DBTestSupport {
-    private final EntityPersister entityPersister = new EntityPersisterImpl(new H2GeneratedIdObtainStrategy(), jdbcTemplate);
-    private final EntityLoader entityLoader = new EntityLoader(jdbcTemplate);
+    private static final InFlightMetadataCollector inFlightMetadataCollector =
+            new InFlightMetadataCollector(new ComponentScanner());
+    private static final MetaModel metaModel = new MetaModelImpl();
     private final PersistenceContext persistenceContext = new PersistenceContextImpl();
     private final EntityEntryContext entityEntryContext = new EntityEntryContext();
     private final EntityEntryFactory entityEntryFactory = new DefaultEntityEntryFactory();
     private final EntityManger entityManger = new EntityMangerImpl(
-            entityPersister,
-            entityLoader,
             persistenceContext,
             entityEntryContext,
-            entityEntryFactory
+            entityEntryFactory,
+            metaModel
     );
-    private final InsertQueryBuilder insertQueryBuilder = new InsertQueryBuilder(Person.class);
+    private final InsertQueryBuilder insertQueryBuilder = new InsertQueryBuilder(PersistentClass.from(Person.class));
 
+    @BeforeAll
+    public static void setUpMetaModel() throws Exception {
+        inFlightMetadataCollector.collectMetadata("persistence.model");
+        metaModel.init(jdbcTemplate, inFlightMetadataCollector, new H2GeneratedIdObtainStrategy());
+    }
 
     @BeforeEach
     public void setUp() {
@@ -175,19 +182,22 @@ class EntityMangerImplTest extends H2DBTestSupport {
     @Test
     @DisplayName("merge 시 dirty 가 아니면 update 하지 않는다.")
     void doNotUpdateWhenEntityIsNotDirty() {
-        EntityPersister mockPersister = mock(EntityPersister.class);
+        MetaModel mockMetamodel = mock(MetaModel.class);
+        EntityPersister mockEntityPersister = mock(EntityPersister.class);
+        when(mockMetamodel.getEntityPersister(any())).thenReturn(mockEntityPersister);
+
         EntityManger sut = new EntityMangerImpl(
-                mockPersister,
-                entityLoader,
                 persistenceContext,
                 entityEntryContext,
-                new EntityEntryCountProxyFactory()
+                new EntityEntryCountProxyFactory(),
+                mockMetamodel
         );
         Person person = new Person(null, "nick_name", 10, "test@test.com", null);
         Person saved = (Person) sut.persist(person);
 
         entityManger.merge(saved);
-        verify(mockPersister, never()).update(any());
+
+        verify(mockEntityPersister, never()).update(any());
     }
 
 
@@ -195,11 +205,10 @@ class EntityMangerImplTest extends H2DBTestSupport {
     @DisplayName("update 시 entityEntry 의 상태를 saving->managed 순서로 변경.")
     void testStatusChangeToManagedWhenMerge() {
         EntityManger sut = new EntityMangerImpl(
-                entityPersister,
-                entityLoader,
                 persistenceContext,
                 entityEntryContext,
-                new EntityEntryCountProxyFactory()
+                new EntityEntryCountProxyFactory(),
+                metaModel
         );
         Person person = new Person(null, "nick_name", 10, "test@test.com", null);
         sut.persist(person);

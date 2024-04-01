@@ -1,30 +1,28 @@
 package persistence.entity;
 
+import persistence.bootstrap.MetaModel;
 import persistence.entity.context.*;
 import persistence.entity.exception.EntityAlreadyExistsException;
 import persistence.entity.exception.EntityNotExistsException;
 import persistence.entity.exception.EntityReadOnlyException;
 
 public class EntityMangerImpl implements EntityManger {
-    private final EntityPersister entityPersister;
-    private final EntityLoader entityLoader;
+    private final MetaModel metaModel;
     private final PersistenceContext persistenceContext;
     private final EntityEntryContext entityEntryContext;
     private final EntityEntryFactory entityEntryFactory;
 
 
     public EntityMangerImpl(
-            EntityPersister entityPersister,
-            EntityLoader entityLoader,
             PersistenceContext persistenceContext,
             EntityEntryContext entityEntryContext,
-            EntityEntryFactory entityEntryFactory
+            EntityEntryFactory entityEntryFactory,
+            MetaModel metaModel
     ) {
-        this.entityPersister = entityPersister;
-        this.entityLoader = entityLoader;
         this.persistenceContext = persistenceContext;
         this.entityEntryContext = entityEntryContext;
         this.entityEntryFactory = entityEntryFactory;
+        this.metaModel = metaModel;
     }
 
     @Override
@@ -39,7 +37,7 @@ public class EntityMangerImpl implements EntityManger {
         EntityEntry entityEntry = entityEntryFactory.createEntityEntry(Status.LOADING);
         entityEntryContext.addEntry(entityKey, entityEntry);
 
-        T foundEntity = entityLoader.find(clazz, id);
+        T foundEntity = metaModel.getEntityLoader(clazz).find(id);
         persistenceContext.addEntity(entityKey, foundEntity);
 
         entityEntry.setManaged();
@@ -56,7 +54,7 @@ public class EntityMangerImpl implements EntityManger {
 
         // TODO: entityEntry 에 SAVING 상태로 등록. id 가 없는데 어떻게?
 
-        entityPersister.insert(entity);
+        metaModel.getEntityPersister(entity.getClass()).insert(entity);
         entityKey = EntityKey.fromEntity(entity);
         persistenceContext.addEntity(entityKey, entity);
         EntityEntry entityEntry = entityEntryFactory.createEntityEntry(Status.MANAGED);
@@ -83,7 +81,7 @@ public class EntityMangerImpl implements EntityManger {
         }
 
         entityEntry.setSaving();
-        entityPersister.update(entity);
+        metaModel.getEntityPersister(entity.getClass()).update(entity);
         persistenceContext.addEntity(entityKey, entity);
         entityEntry.setManaged();
 
@@ -96,7 +94,7 @@ public class EntityMangerImpl implements EntityManger {
         EntityEntry entityEntry = entityEntryContext.getEntry(entityKey);
 
         entityEntry.setDeleted();
-        entityPersister.delete(entity);
+        metaModel.getEntityPersister(entity.getClass()).delete(entity);
         persistenceContext.removeEntity(entity);
         entityEntry.setGone();
     }

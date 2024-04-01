@@ -1,15 +1,16 @@
 package persistence.entity.context;
 
 import persistence.sql.mapping.Columns;
+import persistence.sql.mapping.Values;
 
 import java.util.Map;
 import java.util.Objects;
 
 public class Snapshot {
-    private final Map<String, Object> values;
+    private final Values values;
     public Snapshot(Object entity) {
-        Columns columns = Columns.createColumnsWithValue(entity);
-        values = columns.getValuesMap();
+        Columns columns = Columns.createColumns(entity.getClass());
+        values = Values.fromEntity(entity, columns);
     }
 
     @Override

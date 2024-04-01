@@ -1,36 +1,38 @@
 package persistence.sql.dml;
 
-import persistence.sql.mapping.Columns;
-import persistence.sql.mapping.TableData;
+import persistence.sql.mapping.PersistentClass;
+import persistence.sql.mapping.Values;
 
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class InsertQueryBuilder {
-    private final TableData table;
+    private final PersistentClass persistentClass;
 
-    public InsertQueryBuilder(Class<?> clazz) {
-        this.table = TableData.from(clazz);
+    public InsertQueryBuilder(PersistentClass persistentClass) {
+        this.persistentClass = persistentClass;
     }
 
     public String build(Object entity) {
-        Columns columns = Columns.createColumnsWithValue(entity);
+        Values values = Values.fromEntity(entity, persistentClass.getColumns());
 
         return String.format(
                 "insert into %s (%s) values (%s)",
-                table.getName(),
-                columnClause(columns),
-                valueClause(columns)
+                persistentClass.getTableName(),
+                columnClause(values),
+                valueClause(values)
         );
     }
 
-    private String columnClause(Columns columns) {
-        return String.join(", ", columns.getNames());
+    private String columnClause(Values values) {
+        return values.getEntries().stream()
+                .map(Map.Entry::getKey)
+                .collect(Collectors.joining(", "));
     }
 
-    private String valueClause(Columns columns) {
-        return columns.getValues()
-                .stream()
-                .map(ValueUtil::getValueString)
+    private String valueClause(Values values) {
+        return values.getEntries().stream()
+                .map(entry -> ValueUtil.getValueString(entry.getValue()))
                 .collect(Collectors.joining(", "));
     }
 }
