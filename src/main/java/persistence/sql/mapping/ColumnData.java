@@ -88,7 +88,7 @@ public class ColumnData {
     }
 
     public boolean isNotPrimaryKey() {
-        return !isPk;
+        return !isPrimaryKey();
     }
 
     public Object getValue(Object entity) {
