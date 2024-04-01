@@ -5,6 +5,8 @@ import org.apache.commons.lang3.StringUtils;
 import persistence.sql.mapping.exception.GenerationTypeMissingException;
 
 import java.lang.reflect.Field;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class Column {
     private final Field field;
@@ -121,5 +123,14 @@ public class Column {
             throw new GenerationTypeMissingException();
         }
         return generationType;
+    }
+
+    public void setValue(Object entity, Object value) {
+        field.setAccessible(true);
+        try {
+            field.set(entity, value);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
