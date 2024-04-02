@@ -23,4 +23,19 @@ class EntityManagerFactoryImplTest extends H2DBTestSupport {
 
         assertThat(entityManager).isNotNull();
     }
+
+    @DisplayName("현재 스레드에 이미 EntityManager 가 있으면 생성하지 않고 가져온다")
+    @Test
+    void doNotCreateWhenEmAlreadyExists() throws Exception {
+        EntityManagerFactory entityManagerFactory = new EntityManagerFactoryImpl(
+                new CurrentSessionContextImpl(),
+                InFlightMetadataCollector.create(new ComponentScanner(), "persistence.model"),
+                new H2GeneratedIdObtainStrategy()
+        );
+
+        EntityManager entityManager1 = entityManagerFactory.openSession(server.getConnection());
+        EntityManager entityManager2 = entityManagerFactory.openSession(server.getConnection());
+
+        assertThat(entityManager1).isEqualTo(entityManager2);
+    }
 }

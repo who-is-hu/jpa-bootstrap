@@ -29,7 +29,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory {
 
     @Override
     public EntityManager openSession(Connection connection) {
-        if(currentSessionContext.hasCurrentSession()){
+        if(currentSessionContext.hasBind()){
             return currentSessionContext.currentSession();
         }
 
