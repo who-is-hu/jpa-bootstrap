@@ -13,7 +13,7 @@ import persistence.entity.H2GeneratedIdObtainStrategy;
 
 public class H2DBTestSupport {
     protected static JdbcTemplate jdbcTemplate;
-    private static DatabaseServer server;
+    protected static DatabaseServer server;
     @BeforeAll
     public static void tearUp() throws Exception {
         server = new H2();
