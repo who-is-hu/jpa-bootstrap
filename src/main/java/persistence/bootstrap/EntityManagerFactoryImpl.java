@@ -29,13 +29,19 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory {
 
     @Override
     public EntityManager openSession(Connection connection) {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(connection);
+        if(currentSessionContext.hasCurrentSession()){
+            return currentSessionContext.currentSession();
+        }
 
-        return new EntityManagerImpl(
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(connection);
+        EntityManagerImpl entityManager = new EntityManagerImpl(
                 new PersistenceContextImpl(),
                 new EntityEntryContext(),
                 new DefaultEntityEntryFactory(),
                 MetaModelImpl.create(jdbcTemplate, metaData, generatedIdObtainStrategy)
         );
+        currentSessionContext.putSession(entityManager);
+
+        return entityManager;
     }
 }

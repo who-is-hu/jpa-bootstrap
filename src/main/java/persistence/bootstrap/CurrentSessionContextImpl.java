@@ -13,4 +13,9 @@ public class CurrentSessionContextImpl implements CurrentSessionContext {
     public void putSession(EntityManager entityManager) {
         this.entityManager = entityManager;
     }
+
+    @Override
+    public boolean hasCurrentSession() {
+        return entityManager != null;
+    }
 }
