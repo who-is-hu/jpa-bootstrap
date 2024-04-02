@@ -10,9 +10,9 @@ class InFlightMetadataCollectorTest {
     @DisplayName("@Entity 클래스만 가져와서 메타데이터를 생성한다.")
     @Test
     void createMetadataFromEntityClass() throws Exception {
-        InFlightMetadataCollector inFlightMetadataCollector = new InFlightMetadataCollector(componentScanner);
-
-        inFlightMetadataCollector.collectMetadata("persistence.bootstrap");
+        InFlightMetadataCollector inFlightMetadataCollector = InFlightMetadataCollector.create(
+                componentScanner, "persistence.bootstrap"
+        );
 
         assertSoftly(softly -> {
             softly.assertThat(inFlightMetadataCollector.getPersistentClass(TestNotEntityClass.class)).isNull();

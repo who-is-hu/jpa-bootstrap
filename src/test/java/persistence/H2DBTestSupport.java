@@ -12,8 +12,6 @@ import persistence.bootstrap.MetaModelImpl;
 import persistence.entity.H2GeneratedIdObtainStrategy;
 
 public class H2DBTestSupport {
-    private static InFlightMetadataCollector inFlightMetadataCollector;
-    protected static MetaModel metaModel;
     protected static JdbcTemplate jdbcTemplate;
     private static DatabaseServer server;
     @BeforeAll
