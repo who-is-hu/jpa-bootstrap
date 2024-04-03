@@ -34,7 +34,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory {
         }
 
         JdbcTemplate jdbcTemplate = new JdbcTemplate(connection);
-        EntityManagerImpl entityManager = new EntityManagerImpl(
+        EntityManager entityManager = new EntityManagerImpl(
                 new PersistenceContextImpl(),
                 new EntityEntryContext(),
                 new DefaultEntityEntryFactory(),
