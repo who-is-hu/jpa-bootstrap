@@ -1,26 +1,26 @@
 package persistence.sql.ddl;
 
 import persistence.sql.dialect.Dialect;
-import persistence.sql.mapping.ColumnData;
+import persistence.sql.mapping.Column;
 import persistence.sql.mapping.Columns;
-import persistence.sql.mapping.TableData;
+import persistence.sql.mapping.Table;
 
 import java.util.ArrayList;
 
 public class CreateQueryBuilder {
     private final Dialect dialect;
-    private final TableData tableData;
+    private final Table table;
     private final Columns columns;
 
 
     public CreateQueryBuilder(Dialect dialect, Class<?> clazz) {
         this.dialect = dialect;
-        this.tableData = TableData.from(clazz);
+        this.table = Table.from(clazz);
         this.columns = Columns.createColumns(clazz);
     }
 
     public String build() {
-        final String tableNameClause = tableData.getName();
+        final String tableNameClause = table.getName();
         final String columnClause = getColumnClause();
         final String keyClause = getKeyClause();
 
@@ -29,32 +29,32 @@ public class CreateQueryBuilder {
 
     private String getColumnClause() {
         ArrayList<String> columnStrings = new ArrayList<>();
-        for(ColumnData columnData : columns) {
-            columnStrings.add(getColumnString(columnData));
+        for(Column column : columns) {
+            columnStrings.add(getColumnString(column));
         }
         return String.join(", ", columnStrings);
     }
 
-    private String getColumnString(ColumnData columnData) {
+    private String getColumnString(Column column) {
         StringBuilder stringBuilder = new StringBuilder();
 
-        stringBuilder.append(columnData.getName());
+        stringBuilder.append(column.getName());
         stringBuilder.append(" ");
-        stringBuilder.append(dialect.mapDataType(columnData.getType()));
+        stringBuilder.append(dialect.mapDataType(column.getType()));
 
-        if(columnData.isNotNullable()) {
+        if(column.isNotNullable()) {
             stringBuilder.append(" NOT NULL");
         }
-        if (columnData.hasGenerationType()) {
+        if (column.hasGenerationType()) {
             stringBuilder.append(" ");
-            stringBuilder.append(dialect.mapGenerationType(columnData.getGenerationType()));
+            stringBuilder.append(dialect.mapGenerationType(column.getGenerationType()));
         }
 
         return stringBuilder.toString();
     }
 
     private String getKeyClause() {
-        ColumnData keyColumn = columns.getPkColumn();
+        Column keyColumn = columns.getPkColumn();
         return String.format("%s KEY (%s)", "PRIMARY", keyColumn.getName());
     }
 }

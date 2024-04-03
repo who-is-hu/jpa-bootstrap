@@ -10,7 +10,6 @@ import persistence.sql.dml.WhereBuilder;
 import persistence.sql.mapping.Associations;
 import persistence.sql.mapping.Columns;
 import persistence.sql.mapping.PersistentClass;
-import persistence.sql.mapping.TableData;
 
 import java.util.List;
 import java.util.Set;

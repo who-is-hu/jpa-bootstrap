@@ -5,8 +5,10 @@ import org.apache.commons.lang3.StringUtils;
 import persistence.sql.mapping.exception.GenerationTypeMissingException;
 
 import java.lang.reflect.Field;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-public class ColumnData {
+public class Column {
     private final Field field;
     private final String tableName;
     private final String name;
@@ -15,7 +17,7 @@ public class ColumnData {
     private final GenerationType generationType;
     private final boolean isNullable;
 
-    private ColumnData(
+    private Column(
             Field field,
             String tableName,
             String name,
@@ -33,9 +35,9 @@ public class ColumnData {
         this.isNullable = isNullable;
     }
 
-    public static ColumnData createColumn(String tableName, Field field) {
-        Column column = field.getAnnotation(Column.class);
-        return new ColumnData(
+    public static Column createColumn(String tableName, Field field) {
+        jakarta.persistence.Column column = field.getAnnotation(jakarta.persistence.Column.class);
+        return new Column(
                 field,
                 tableName,
                 extractName(field, column),
@@ -45,7 +47,7 @@ public class ColumnData {
                 extractIsNullable(column)
         );
     }
-    private static String extractName(Field field, Column column) {
+    private static String extractName(Field field, jakarta.persistence.Column column) {
         String columnName = StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(field.getName()), '_').toLowerCase();
         if (column != null && !column.name().isEmpty()) {
             return column.name();
@@ -57,7 +59,7 @@ public class ColumnData {
         return new DataTypeMapper().mapToSqlType(field.getType());
     }
 
-    private static boolean extractIsNullable(Column column) {
+    private static boolean extractIsNullable(jakarta.persistence.Column column) {
         if (column == null) {
             return true;
         }
@@ -88,7 +90,7 @@ public class ColumnData {
     }
 
     public boolean isNotPrimaryKey() {
-        return !isPk;
+        return !isPrimaryKey();
     }
 
     public Object getValue(Object entity) {
@@ -98,6 +100,10 @@ public class ColumnData {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public boolean hasNotValue(Object entity) {
+        return getValue(entity) == null;
     }
 
     public int getType() {
@@ -117,5 +123,14 @@ public class ColumnData {
             throw new GenerationTypeMissingException();
         }
         return generationType;
+    }
+
+    public void setValue(Object entity, Object value) {
+        field.setAccessible(true);
+        try {
+            field.set(entity, value);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

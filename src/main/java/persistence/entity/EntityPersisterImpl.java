@@ -7,10 +7,10 @@ import persistence.sql.dml.DeleteQueryBuilder;
 import persistence.sql.dml.InsertQueryBuilder;
 import persistence.sql.dml.UpdateQueryBuilder;
 import persistence.sql.dml.WhereBuilder;
-import persistence.sql.mapping.ColumnData;
+import persistence.sql.mapping.Column;
 import persistence.sql.mapping.Columns;
 import persistence.sql.mapping.PersistentClass;
-import persistence.sql.mapping.TableData;
+import persistence.sql.mapping.Table;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -34,9 +34,9 @@ public class EntityPersisterImpl implements EntityPersister {
 
     @Override
     public boolean update(Object entity) {
-        ColumnData keyColumn = persistentClass.getPkColumn();
+        Column keyColumn = persistentClass.getPkColumn();
 
-        if(keyColumn.getValue(entity) == null) {
+        if(keyColumn.hasNotValue(entity)) {
             return false;
         }
 
@@ -82,8 +82,8 @@ public class EntityPersisterImpl implements EntityPersister {
     @Override
     public void delete(Object entity) {
         Class<?> clazz = entity.getClass();
-        TableData table = TableData.from(clazz);
-        ColumnData idColumn = Columns.createColumns(entity.getClass()).getPkColumn();
+        Table table = Table.from(clazz);
+        Column idColumn = Columns.createColumns(entity.getClass()).getPkColumn();
 
         DeleteQueryBuilder deleteQueryBuilder = new DeleteQueryBuilder(clazz);
         WhereBuilder builder = new WhereBuilder();

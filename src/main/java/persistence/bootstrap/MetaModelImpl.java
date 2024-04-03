@@ -13,7 +13,19 @@ public class MetaModelImpl implements MetaModel {
     private final Map<Class<?>, EntityPersister> persisterMap = new HashMap<>();
     private final Map<Class<?>, EntityLoader> loaderMap = new HashMap<>();
 
-    public void init(
+    private MetaModelImpl() {}
+
+    public static MetaModel create(
+            JdbcTemplate jdbcTemplate,
+            InFlightMetadataCollector inFlightMetadataCollector,
+            GeneratedIdObtainStrategy generatedIdObtainStrategy
+    ) {
+        MetaModelImpl metaModel = new MetaModelImpl();
+        metaModel.init(jdbcTemplate, inFlightMetadataCollector, generatedIdObtainStrategy);
+        return metaModel;
+    }
+
+    private void init(
             JdbcTemplate jdbcTemplate,
             InFlightMetadataCollector inFlightMetadataCollector,
             GeneratedIdObtainStrategy generatedIdObtainStrategy

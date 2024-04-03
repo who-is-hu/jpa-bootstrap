@@ -2,10 +2,8 @@ package persistence.sql.dml;
 
 import persistence.sql.mapping.*;
 
-import java.util.ArrayList;
-
 public class SelectQueryBuilder {
-    private final TableData table;
+    private final Table table;
     private final Columns columns;
     private final Associations associations;
 

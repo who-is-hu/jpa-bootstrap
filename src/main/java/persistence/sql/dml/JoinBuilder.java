@@ -3,14 +3,14 @@ package persistence.sql.dml;
 import persistence.sql.mapping.Associations;
 import persistence.sql.mapping.OneToManyData;
 import persistence.sql.mapping.Columns;
-import persistence.sql.mapping.TableData;
+import persistence.sql.mapping.Table;
 
 public class JoinBuilder {
-    private final TableData table;
+    private final Table table;
     private final Columns columns;
     private final Associations associations;
 
-    public JoinBuilder(TableData table, Columns columns, Associations associations) {
+    public JoinBuilder(Table table, Columns columns, Associations associations) {
         this.table = table;
         this.columns = columns;
         this.associations = associations;

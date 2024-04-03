@@ -11,11 +11,20 @@ public class InFlightMetadataCollector {
     private final ComponentScanner componentScanner;
     private final Map<Class<?>, PersistentClass> persistentClassMap = new HashMap<>();
 
-    public InFlightMetadataCollector(ComponentScanner componentScanner) {
+    private InFlightMetadataCollector(ComponentScanner componentScanner) {
         this.componentScanner = componentScanner;
     }
 
-    public void collectMetadata(String basePackage) throws ClassNotFoundException {
+    public static InFlightMetadataCollector create(
+            ComponentScanner componentScanner,
+            String basePackage
+    ) throws ClassNotFoundException {
+        InFlightMetadataCollector metadataCollector = new InFlightMetadataCollector(componentScanner);
+        metadataCollector.collectMetadata(basePackage);
+        return metadataCollector;
+    }
+
+    private void collectMetadata(String basePackage) throws ClassNotFoundException {
         List<Class<?>> classes = componentScanner.scan(basePackage);
         classes.stream()
                 .filter(clazz -> clazz.isAnnotationPresent(Entity.class))

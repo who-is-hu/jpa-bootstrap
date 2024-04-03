@@ -1,6 +1,6 @@
 package persistence.entity.context;
 
-import persistence.sql.mapping.ColumnData;
+import persistence.sql.mapping.Column;
 import persistence.sql.mapping.Columns;
 
 import java.util.Objects;
@@ -16,7 +16,7 @@ public class EntityKey {
 
     public static EntityKey fromEntity(Object entity){
         Columns columns = Columns.createColumns(entity.getClass());
-        ColumnData keyColumn = columns.getPkColumn();
+        Column keyColumn = columns.getPkColumn();
         return new EntityKey(entity.getClass(), keyColumn.getValue(entity));
     }
 

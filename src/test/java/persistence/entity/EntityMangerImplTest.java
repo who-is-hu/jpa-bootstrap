@@ -24,13 +24,12 @@ import static org.mockito.Mockito.*;
 
 
 class EntityMangerImplTest extends H2DBTestSupport {
-    private static final InFlightMetadataCollector inFlightMetadataCollector =
-            new InFlightMetadataCollector(new ComponentScanner());
-    private static final MetaModel metaModel = new MetaModelImpl();
+    private static InFlightMetadataCollector inFlightMetadataCollector;
+    private static MetaModel metaModel;
     private final PersistenceContext persistenceContext = new PersistenceContextImpl();
     private final EntityEntryContext entityEntryContext = new EntityEntryContext();
     private final EntityEntryFactory entityEntryFactory = new DefaultEntityEntryFactory();
-    private final EntityManger entityManger = new EntityMangerImpl(
+    private final EntityManager entityManger = new EntityManagerImpl(
             persistenceContext,
             entityEntryContext,
             entityEntryFactory,
@@ -40,8 +39,9 @@ class EntityMangerImplTest extends H2DBTestSupport {
 
     @BeforeAll
     public static void setUpMetaModel() throws Exception {
-        inFlightMetadataCollector.collectMetadata("persistence.model");
-        metaModel.init(jdbcTemplate, inFlightMetadataCollector, new H2GeneratedIdObtainStrategy());
+        inFlightMetadataCollector =
+                InFlightMetadataCollector.create(new ComponentScanner(), "persistence.model");
+        metaModel = MetaModelImpl.create(jdbcTemplate, inFlightMetadataCollector, new H2GeneratedIdObtainStrategy());
     }
 
     @BeforeEach
@@ -186,7 +186,7 @@ class EntityMangerImplTest extends H2DBTestSupport {
         EntityPersister mockEntityPersister = mock(EntityPersister.class);
         when(mockMetamodel.getEntityPersister(any())).thenReturn(mockEntityPersister);
 
-        EntityManger sut = new EntityMangerImpl(
+        EntityManager sut = new EntityManagerImpl(
                 persistenceContext,
                 entityEntryContext,
                 new EntityEntryCountProxyFactory(),
@@ -204,7 +204,7 @@ class EntityMangerImplTest extends H2DBTestSupport {
     @Test
     @DisplayName("update 시 entityEntry 의 상태를 saving->managed 순서로 변경.")
     void testStatusChangeToManagedWhenMerge() {
-        EntityManger sut = new EntityMangerImpl(
+        EntityManager sut = new EntityManagerImpl(
                 persistenceContext,
                 entityEntryContext,
                 new EntityEntryCountProxyFactory(),

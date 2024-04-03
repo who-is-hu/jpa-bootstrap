@@ -11,26 +11,26 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Columns implements Iterable<ColumnData> {
+public class Columns implements Iterable<Column> {
 
-    private final List<ColumnData> columns;
+    private final List<Column> columns;
 
-    private Columns(List<ColumnData> columns) {
+    private Columns(List<Column> columns) {
         this.columns = columns;
     }
 
     @Override
-    public Iterator<ColumnData> iterator() {
+    public Iterator<Column> iterator() {
         return columns.iterator();
     }
 
     public static Columns createColumns(Class<?> clazz) {
         checkIsEntity(clazz);
-        TableData table = TableData.from(clazz);
-        List<ColumnData> columns = Arrays.stream(clazz.getDeclaredFields())
+        Table table = Table.from(clazz);
+        List<Column> columns = Arrays.stream(clazz.getDeclaredFields())
                 .filter(field -> !field.isAnnotationPresent(Transient.class))
                 .filter(field -> !field.isAnnotationPresent(OneToMany.class))
-                .map(field -> ColumnData.createColumn(table.getName(), field))
+                .map(field -> Column.createColumn(table.getName(), field))
                 .collect(Collectors.toList());
 
         checkHasPrimaryKey(columns);
@@ -39,19 +39,19 @@ public class Columns implements Iterable<ColumnData> {
 
     public List<String> getNames() {
         return columns.stream()
-                .map(ColumnData::getNameWithTable)
+                .map(Column::getNameWithTable)
                 .collect(Collectors.toList());
     }
 
-    public List<ColumnData> getNonPkColumns() {
+    public List<Column> getNonPkColumns() {
         return columns.stream()
-                .filter(ColumnData::isNotPrimaryKey)
+                .filter(Column::isNotPrimaryKey)
                 .collect(Collectors.toList());
     }
 
-    public ColumnData getPkColumn() {
+    public Column getPkColumn() {
         return columns.stream()
-                .filter(ColumnData::isPrimaryKey)
+                .filter(Column::isPrimaryKey)
                 .findFirst()
                 .orElseThrow(IdAnnotationMissingException::new);
     }
@@ -66,8 +66,8 @@ public class Columns implements Iterable<ColumnData> {
         }
     }
 
-    private static void checkHasPrimaryKey(List<ColumnData> columns) {
-        if (columns.stream().noneMatch(ColumnData::isPrimaryKey)) {
+    private static void checkHasPrimaryKey(List<Column> columns) {
+        if (columns.stream().noneMatch(Column::isPrimaryKey)) {
             throw new IdAnnotationMissingException();
         }
     }

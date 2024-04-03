@@ -1,12 +1,12 @@
 package persistence.sql.dml;
 
-import persistence.sql.mapping.TableData;
+import persistence.sql.mapping.Table;
 
 public class DeleteQueryBuilder {
-    private final TableData table;
+    private final Table table;
 
     public DeleteQueryBuilder(Class<?> clazz) {
-        this.table = TableData.from(clazz);
+        this.table = Table.from(clazz);
     }
 
     public String build(WhereBuilder whereBuilder) {

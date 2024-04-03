@@ -6,14 +6,14 @@ import persistence.entity.exception.EntityAlreadyExistsException;
 import persistence.entity.exception.EntityNotExistsException;
 import persistence.entity.exception.EntityReadOnlyException;
 
-public class EntityMangerImpl implements EntityManger {
+public class EntityManagerImpl implements EntityManager {
     private final MetaModel metaModel;
     private final PersistenceContext persistenceContext;
     private final EntityEntryContext entityEntryContext;
     private final EntityEntryFactory entityEntryFactory;
 
 
-    public EntityMangerImpl(
+    public EntityManagerImpl(
             PersistenceContext persistenceContext,
             EntityEntryContext entityEntryContext,
             EntityEntryFactory entityEntryFactory,
