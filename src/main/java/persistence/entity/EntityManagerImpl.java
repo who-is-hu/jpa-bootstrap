@@ -5,44 +5,39 @@ import persistence.entity.context.*;
 import persistence.entity.exception.EntityAlreadyExistsException;
 import persistence.entity.exception.EntityNotExistsException;
 import persistence.entity.exception.EntityReadOnlyException;
+import persistence.event.EventListenerRegistry;
+import persistence.event.EventType;
+import persistence.event.LoadEvent;
+import persistence.event.listener.EventListener;
+import persistence.event.listener.LoadEventListener;
 
 public class EntityManagerImpl implements EntityManager {
     private final MetaModel metaModel;
     private final PersistenceContext persistenceContext;
     private final EntityEntryContext entityEntryContext;
     private final EntityEntryFactory entityEntryFactory;
+    private final EventListenerRegistry eventListenerRegistry;
 
 
     public EntityManagerImpl(
             PersistenceContext persistenceContext,
             EntityEntryContext entityEntryContext,
             EntityEntryFactory entityEntryFactory,
-            MetaModel metaModel
+            MetaModel metaModel,
+            EventListenerRegistry eventListenerRegistry
     ) {
         this.persistenceContext = persistenceContext;
         this.entityEntryContext = entityEntryContext;
         this.entityEntryFactory = entityEntryFactory;
         this.metaModel = metaModel;
+        this.eventListenerRegistry = eventListenerRegistry;
     }
 
     @Override
     public <T> T find(Class<T> clazz, Object id) {
-        EntityKey entityKey = new EntityKey(clazz, id);
-        Object cachedEntity = persistenceContext.getEntity(entityKey);
-
-        if(cachedEntity != null) {
-            return (T) cachedEntity;
-        }
-
-        EntityEntry entityEntry = entityEntryFactory.createEntityEntry(Status.LOADING);
-        entityEntryContext.addEntry(entityKey, entityEntry);
-
-        T foundEntity = metaModel.getEntityLoader(clazz).find(id);
-        persistenceContext.addEntity(entityKey, foundEntity);
-
-        entityEntry.setManaged();
-
-        return foundEntity;
+        LoadEvent loadEvent = new LoadEvent(clazz, id, persistenceContext, entityEntryContext, entityEntryFactory);
+        LoadEventListener eventListener = (LoadEventListener) eventListenerRegistry.getEventListener(EventType.LOAD);
+        return eventListener.onLoad(loadEvent);
     }
 
     @Override

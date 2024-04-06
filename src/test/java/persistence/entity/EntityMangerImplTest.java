@@ -2,6 +2,7 @@ package persistence.entity;
 
 import org.junit.jupiter.api.*;
 import persistence.H2DBTestSupport;
+import persistence.event.EventListenerRegistryImpl;
 import persistence.model.Person;
 import persistence.bootstrap.ComponentScanner;
 import persistence.bootstrap.InFlightMetadataCollector;
@@ -33,7 +34,8 @@ class EntityMangerImplTest extends H2DBTestSupport {
             persistenceContext,
             entityEntryContext,
             entityEntryFactory,
-            metaModel
+            metaModel,
+            new EventListenerRegistryImpl(metaModel)
     );
     private final InsertQueryBuilder insertQueryBuilder = new InsertQueryBuilder(PersistentClass.from(Person.class));
 
@@ -190,7 +192,8 @@ class EntityMangerImplTest extends H2DBTestSupport {
                 persistenceContext,
                 entityEntryContext,
                 new EntityEntryCountProxyFactory(),
-                mockMetamodel
+                mockMetamodel,
+                new EventListenerRegistryImpl(mockMetamodel)
         );
         Person person = new Person(null, "nick_name", 10, "test@test.com", null);
         Person saved = (Person) sut.persist(person);
@@ -208,7 +211,8 @@ class EntityMangerImplTest extends H2DBTestSupport {
                 persistenceContext,
                 entityEntryContext,
                 new EntityEntryCountProxyFactory(),
-                metaModel
+                metaModel,
+                new EventListenerRegistryImpl(metaModel)
         );
         Person person = new Person(null, "nick_name", 10, "test@test.com", null);
         sut.persist(person);

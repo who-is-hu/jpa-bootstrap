@@ -1,7 +1,6 @@
 package persistence.bootstrap;
 
 
-import database.DatabaseServer;
 import jdbc.JdbcTemplate;
 import persistence.entity.EntityManager;
 import persistence.entity.EntityManagerImpl;
@@ -9,6 +8,7 @@ import persistence.entity.GeneratedIdObtainStrategy;
 import persistence.entity.context.DefaultEntityEntryFactory;
 import persistence.entity.context.EntityEntryContext;
 import persistence.entity.context.PersistenceContextImpl;
+import persistence.event.EventListenerRegistryImpl;
 
 import java.sql.Connection;
 
@@ -34,11 +34,14 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory {
         }
 
         JdbcTemplate jdbcTemplate = new JdbcTemplate(connection);
+        MetaModel metaModel = MetaModelImpl.create(jdbcTemplate, metaData, generatedIdObtainStrategy);
+
         EntityManager entityManager = new EntityManagerImpl(
                 new PersistenceContextImpl(),
                 new EntityEntryContext(),
                 new DefaultEntityEntryFactory(),
-                MetaModelImpl.create(jdbcTemplate, metaData, generatedIdObtainStrategy)
+                metaModel,
+                new EventListenerRegistryImpl(metaModel)
         );
         currentSessionContext.putSession(entityManager);
 
