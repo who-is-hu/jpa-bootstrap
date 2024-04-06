@@ -8,8 +8,10 @@ import persistence.entity.exception.EntityReadOnlyException;
 import persistence.event.EventListenerRegistry;
 import persistence.event.EventType;
 import persistence.event.LoadEvent;
+import persistence.event.PersistEvent;
 import persistence.event.listener.EventListener;
 import persistence.event.listener.LoadEventListener;
+import persistence.event.listener.PersistEventListener;
 
 public class EntityManagerImpl implements EntityManager {
     private final MetaModel metaModel;
@@ -42,20 +44,16 @@ public class EntityManagerImpl implements EntityManager {
 
     @Override
     public Object persist(Object entity) {
-        EntityKey entityKey = EntityKey.fromEntity(entity);
-        if(entityKey.hasId()) {
-            throw new EntityAlreadyExistsException(entityKey);
-        }
+        PersistEvent event = new PersistEvent(
+                entity,
+                persistenceContext,
+                entityEntryContext,
+                entityEntryFactory
+        );
+        PersistEventListener eventListener =
+                (PersistEventListener) eventListenerRegistry.getEventListener(EventType.PERSIST);
 
-        // TODO: entityEntry 에 SAVING 상태로 등록. id 가 없는데 어떻게?
-
-        metaModel.getEntityPersister(entity.getClass()).insert(entity);
-        entityKey = EntityKey.fromEntity(entity);
-        persistenceContext.addEntity(entityKey, entity);
-        EntityEntry entityEntry = entityEntryFactory.createEntityEntry(Status.MANAGED);
-        entityEntryContext.addEntry(entityKey, entityEntry);
-
-        return entity;
+        return eventListener.onPersist(event);
     }
 
     @Override

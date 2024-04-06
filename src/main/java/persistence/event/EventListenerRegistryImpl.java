@@ -2,6 +2,7 @@ package persistence.event;
 
 import persistence.bootstrap.MetaModel;
 import persistence.event.listener.DefaultLoadEventListener;
+import persistence.event.listener.DefaultPersistEventListener;
 import persistence.event.listener.EventListener;
 
 import java.util.HashMap;
@@ -14,6 +15,7 @@ public class EventListenerRegistryImpl implements EventListenerRegistry {
     public EventListenerRegistryImpl(MetaModel metaModel) {
         this.metaModel = metaModel;
         registerEventListener(EventType.LOAD, new DefaultLoadEventListener(metaModel));
+        registerEventListener(EventType.PERSIST, new DefaultPersistEventListener(metaModel));
     }
 
     @Override
