@@ -5,12 +5,10 @@ import persistence.entity.context.*;
 import persistence.entity.exception.EntityAlreadyExistsException;
 import persistence.entity.exception.EntityNotExistsException;
 import persistence.entity.exception.EntityReadOnlyException;
-import persistence.event.EventListenerRegistry;
-import persistence.event.EventType;
-import persistence.event.LoadEvent;
-import persistence.event.PersistEvent;
+import persistence.event.*;
 import persistence.event.listener.EventListener;
 import persistence.event.listener.LoadEventListener;
+import persistence.event.listener.MergeEventListener;
 import persistence.event.listener.PersistEventListener;
 
 public class EntityManagerImpl implements EntityManager {
@@ -58,27 +56,15 @@ public class EntityManagerImpl implements EntityManager {
 
     @Override
     public Object merge(Object entity) {
-        EntityKey entityKey = EntityKey.fromEntity(entity);
-        EntityEntry entityEntry = entityEntryContext.getEntry(entityKey);
+        MergeEvent mergeEvent = new MergeEvent(
+                entity,
+                persistenceContext,
+                entityEntryContext
+        );
+        MergeEventListener eventListener =
+                (MergeEventListener) eventListenerRegistry.getEventListener(EventType.MERGE);
 
-        if(entityEntry == null || persistenceContext.getEntity(entityKey) == null) {
-            throw new EntityNotExistsException(entityKey);
-        }
-
-        if(entityEntry.isReadOnly()){
-            throw new EntityReadOnlyException(entityKey);
-        }
-
-        if(!persistenceContext.isDirty(entityKey, entity)) {
-            return entity;
-        }
-
-        entityEntry.setSaving();
-        metaModel.getEntityPersister(entity.getClass()).update(entity);
-        persistenceContext.addEntity(entityKey, entity);
-        entityEntry.setManaged();
-
-        return entity;
+        return eventListener.onMerge(mergeEvent);
     }
 
     @Override

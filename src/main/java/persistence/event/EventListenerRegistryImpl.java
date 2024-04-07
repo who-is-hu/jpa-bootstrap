@@ -2,6 +2,7 @@ package persistence.event;
 
 import persistence.bootstrap.MetaModel;
 import persistence.event.listener.DefaultLoadEventListener;
+import persistence.event.listener.DefaultMergeEventListener;
 import persistence.event.listener.DefaultPersistEventListener;
 import persistence.event.listener.EventListener;
 
@@ -16,6 +17,7 @@ public class EventListenerRegistryImpl implements EventListenerRegistry {
         this.metaModel = metaModel;
         registerEventListener(EventType.LOAD, new DefaultLoadEventListener(metaModel));
         registerEventListener(EventType.PERSIST, new DefaultPersistEventListener(metaModel));
+        registerEventListener(EventType.MERGE, new DefaultMergeEventListener(metaModel));
     }
 
     @Override
