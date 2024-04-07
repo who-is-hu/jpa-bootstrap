@@ -1,5 +1,6 @@
 package persistence.event;
 
+import persistence.action.ActionQueue;
 import persistence.entity.context.EntityEntryContext;
 import persistence.entity.context.PersistenceContext;
 
@@ -7,11 +8,18 @@ public class MergeEvent {
     private final Object entity;
     private final PersistenceContext persistenceContext;
     private final EntityEntryContext entityEntryContext;
+    private final ActionQueue actionQueue;
 
-    public MergeEvent(Object entity, PersistenceContext persistenceContext, EntityEntryContext entityEntryContext) {
+    public MergeEvent(
+            Object entity,
+            PersistenceContext persistenceContext,
+            EntityEntryContext entityEntryContext,
+            ActionQueue actionQueue
+    ) {
         this.entity = entity;
         this.persistenceContext = persistenceContext;
         this.entityEntryContext = entityEntryContext;
+        this.actionQueue = actionQueue;
     }
 
     public Object getEntity() {
@@ -24,5 +32,9 @@ public class MergeEvent {
 
     public EntityEntryContext getEntityEntryContext() {
         return entityEntryContext;
+    }
+
+    public ActionQueue getActionQueue() {
+        return actionQueue;
     }
 }

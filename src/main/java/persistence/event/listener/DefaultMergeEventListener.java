@@ -1,5 +1,7 @@
 package persistence.event.listener;
 
+import persistence.action.ActionQueue;
+import persistence.action.UpdateAction;
 import persistence.bootstrap.MetaModel;
 import persistence.entity.context.EntityEntry;
 import persistence.entity.context.EntityEntryContext;
@@ -21,6 +23,7 @@ public class DefaultMergeEventListener implements MergeEventListener {
         Object entity = event.getEntity();
         PersistenceContext persistenceContext = event.getPersistenceContext();
         EntityEntryContext entityEntryContext = event.getEntityEntryContext();
+        ActionQueue actionQueue = event.getActionQueue();
 
         EntityKey entityKey = EntityKey.fromEntity(entity);
         EntityEntry entityEntry = entityEntryContext.getEntry(entityKey);
@@ -38,7 +41,8 @@ public class DefaultMergeEventListener implements MergeEventListener {
         }
 
         entityEntry.setSaving();
-        metaModel.getEntityPersister(entity.getClass()).update(entity);
+        UpdateAction updateAction = new UpdateAction(entity, metaModel.getEntityPersister(entity.getClass()));
+        actionQueue.addUpdateAction(updateAction);
         persistenceContext.addEntity(entityKey, entity);
         entityEntry.setManaged();
 

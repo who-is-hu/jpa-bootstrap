@@ -1,5 +1,7 @@
 package persistence.event.listener;
 
+import persistence.action.ActionQueue;
+import persistence.action.DeleteAction;
 import persistence.bootstrap.MetaModel;
 import persistence.entity.context.EntityEntry;
 import persistence.entity.context.EntityEntryContext;
@@ -19,12 +21,14 @@ public class DefaultDeleteEventListener implements DeleteEventListener {
         Object entity = event.getEntity();
         PersistenceContext persistenceContext = event.getPersistenceContext();
         EntityEntryContext entityEntryContext = event.getEntityEntryContext();
+        ActionQueue actionQueue = event.getActionQueue();
 
         EntityKey entityKey = EntityKey.fromEntity(entity);
         EntityEntry entityEntry = entityEntryContext.getEntry(entityKey);
 
         entityEntry.setDeleted();
-        metaModel.getEntityPersister(entity.getClass()).delete(entity);
+        DeleteAction deleteAction = new DeleteAction(entity, metaModel.getEntityPersister(entity.getClass()));
+        actionQueue.addDeleteAction(deleteAction);
         persistenceContext.removeEntity(entity);
         entityEntry.setGone();
     }

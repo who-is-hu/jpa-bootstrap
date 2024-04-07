@@ -82,7 +82,6 @@ public class EntityPersisterImpl implements EntityPersister {
     @Override
     public void delete(Object entity) {
         Class<?> clazz = entity.getClass();
-        Table table = Table.from(clazz);
         Column idColumn = Columns.createColumns(entity.getClass()).getPkColumn();
 
         DeleteQueryBuilder deleteQueryBuilder = new DeleteQueryBuilder(clazz);

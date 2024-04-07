@@ -1,5 +1,6 @@
 package persistence.entity;
 
+import persistence.action.ActionQueue;
 import persistence.entity.context.EntityEntryContext;
 import persistence.entity.context.EntityEntryFactory;
 import persistence.entity.context.PersistenceContext;
@@ -14,7 +15,7 @@ public class EntityManagerImpl implements EntityManager {
     private final EntityEntryContext entityEntryContext;
     private final EntityEntryFactory entityEntryFactory;
     private final EventListenerRegistry eventListenerRegistry;
-
+    private final ActionQueue actionQueue = new ActionQueue();
 
     public EntityManagerImpl(
             PersistenceContext persistenceContext,
@@ -41,7 +42,8 @@ public class EntityManagerImpl implements EntityManager {
                 entity,
                 persistenceContext,
                 entityEntryContext,
-                entityEntryFactory
+                entityEntryFactory,
+                actionQueue
         );
         PersistEventListener eventListener =
                 (PersistEventListener) eventListenerRegistry.getEventListener(EventType.PERSIST);
@@ -54,7 +56,8 @@ public class EntityManagerImpl implements EntityManager {
         MergeEvent mergeEvent = new MergeEvent(
                 entity,
                 persistenceContext,
-                entityEntryContext
+                entityEntryContext,
+                actionQueue
         );
         MergeEventListener eventListener =
                 (MergeEventListener) eventListenerRegistry.getEventListener(EventType.MERGE);
@@ -64,10 +67,20 @@ public class EntityManagerImpl implements EntityManager {
 
     @Override
     public void remove(Object entity) {
-        DeleteEvent deleteEvent = new DeleteEvent(entity, persistenceContext, entityEntryContext);
+        DeleteEvent deleteEvent = new DeleteEvent(
+                entity,
+                persistenceContext,
+                entityEntryContext,
+                actionQueue
+        );
         DeleteEventListener eventListener =
                 (DeleteEventListener) eventListenerRegistry.getEventListener(EventType.DELETE);
 
         eventListener.onDelete(deleteEvent);
+    }
+
+    @Override
+    public void flush() {
+        actionQueue.executeActions();
     }
 }
