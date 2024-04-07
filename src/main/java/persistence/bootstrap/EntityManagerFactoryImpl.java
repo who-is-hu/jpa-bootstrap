@@ -40,7 +40,6 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory {
                 new PersistenceContextImpl(),
                 new EntityEntryContext(),
                 new DefaultEntityEntryFactory(),
-                metaModel,
                 new EventListenerRegistryImpl(metaModel)
         );
         currentSessionContext.putSession(entityManager);

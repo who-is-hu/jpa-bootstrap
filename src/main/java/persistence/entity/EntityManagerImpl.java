@@ -1,18 +1,15 @@
 package persistence.entity;
 
-import persistence.bootstrap.MetaModel;
-import persistence.entity.context.*;
-import persistence.entity.exception.EntityAlreadyExistsException;
-import persistence.entity.exception.EntityNotExistsException;
-import persistence.entity.exception.EntityReadOnlyException;
+import persistence.entity.context.EntityEntryContext;
+import persistence.entity.context.EntityEntryFactory;
+import persistence.entity.context.PersistenceContext;
 import persistence.event.*;
-import persistence.event.listener.EventListener;
+import persistence.event.listener.DeleteEventListener;
 import persistence.event.listener.LoadEventListener;
 import persistence.event.listener.MergeEventListener;
 import persistence.event.listener.PersistEventListener;
 
 public class EntityManagerImpl implements EntityManager {
-    private final MetaModel metaModel;
     private final PersistenceContext persistenceContext;
     private final EntityEntryContext entityEntryContext;
     private final EntityEntryFactory entityEntryFactory;
@@ -23,13 +20,11 @@ public class EntityManagerImpl implements EntityManager {
             PersistenceContext persistenceContext,
             EntityEntryContext entityEntryContext,
             EntityEntryFactory entityEntryFactory,
-            MetaModel metaModel,
             EventListenerRegistry eventListenerRegistry
     ) {
         this.persistenceContext = persistenceContext;
         this.entityEntryContext = entityEntryContext;
         this.entityEntryFactory = entityEntryFactory;
-        this.metaModel = metaModel;
         this.eventListenerRegistry = eventListenerRegistry;
     }
 
@@ -69,12 +64,10 @@ public class EntityManagerImpl implements EntityManager {
 
     @Override
     public void remove(Object entity) {
-        EntityKey entityKey = EntityKey.fromEntity(entity);
-        EntityEntry entityEntry = entityEntryContext.getEntry(entityKey);
+        DeleteEvent deleteEvent = new DeleteEvent(entity, persistenceContext, entityEntryContext);
+        DeleteEventListener eventListener =
+                (DeleteEventListener) eventListenerRegistry.getEventListener(EventType.DELETE);
 
-        entityEntry.setDeleted();
-        metaModel.getEntityPersister(entity.getClass()).delete(entity);
-        persistenceContext.removeEntity(entity);
-        entityEntry.setGone();
+        eventListener.onDelete(deleteEvent);
     }
 }

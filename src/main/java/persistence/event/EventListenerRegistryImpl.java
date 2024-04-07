@@ -1,10 +1,7 @@
 package persistence.event;
 
 import persistence.bootstrap.MetaModel;
-import persistence.event.listener.DefaultLoadEventListener;
-import persistence.event.listener.DefaultMergeEventListener;
-import persistence.event.listener.DefaultPersistEventListener;
-import persistence.event.listener.EventListener;
+import persistence.event.listener.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +15,7 @@ public class EventListenerRegistryImpl implements EventListenerRegistry {
         registerEventListener(EventType.LOAD, new DefaultLoadEventListener(metaModel));
         registerEventListener(EventType.PERSIST, new DefaultPersistEventListener(metaModel));
         registerEventListener(EventType.MERGE, new DefaultMergeEventListener(metaModel));
+        registerEventListener(EventType.DELETE, new DefaultDeleteEventListener(metaModel));
     }
 
     @Override

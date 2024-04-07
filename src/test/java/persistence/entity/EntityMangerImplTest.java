@@ -34,7 +34,6 @@ class EntityMangerImplTest extends H2DBTestSupport {
             persistenceContext,
             entityEntryContext,
             entityEntryFactory,
-            metaModel,
             new EventListenerRegistryImpl(metaModel)
     );
     private final InsertQueryBuilder insertQueryBuilder = new InsertQueryBuilder(PersistentClass.from(Person.class));
@@ -192,7 +191,6 @@ class EntityMangerImplTest extends H2DBTestSupport {
                 persistenceContext,
                 entityEntryContext,
                 new EntityEntryCountProxyFactory(),
-                mockMetamodel,
                 new EventListenerRegistryImpl(mockMetamodel)
         );
         Person person = new Person(null, "nick_name", 10, "test@test.com", null);
@@ -211,7 +209,6 @@ class EntityMangerImplTest extends H2DBTestSupport {
                 persistenceContext,
                 entityEntryContext,
                 new EntityEntryCountProxyFactory(),
-                metaModel,
                 new EventListenerRegistryImpl(metaModel)
         );
         Person person = new Person(null, "nick_name", 10, "test@test.com", null);
