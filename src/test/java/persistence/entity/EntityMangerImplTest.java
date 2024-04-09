@@ -2,11 +2,9 @@ package persistence.entity;
 
 import org.junit.jupiter.api.*;
 import persistence.H2DBTestSupport;
+import persistence.bootstrap.*;
+import persistence.event.EventListenerRegistryImpl;
 import persistence.model.Person;
-import persistence.bootstrap.ComponentScanner;
-import persistence.bootstrap.InFlightMetadataCollector;
-import persistence.bootstrap.MetaModel;
-import persistence.bootstrap.MetaModelImpl;
 import persistence.entity.context.*;
 import persistence.entity.exception.EntityAlreadyExistsException;
 import persistence.entity.exception.EntityNotExistsException;
@@ -33,7 +31,7 @@ class EntityMangerImplTest extends H2DBTestSupport {
             persistenceContext,
             entityEntryContext,
             entityEntryFactory,
-            metaModel
+            new EventListenerRegistryImpl(metaModel)
     );
     private final InsertQueryBuilder insertQueryBuilder = new InsertQueryBuilder(PersistentClass.from(Person.class));
 
@@ -94,6 +92,7 @@ class EntityMangerImplTest extends H2DBTestSupport {
 
         Object saved = entityManger.persist(person);
         Person savedPerson = (Person) saved;
+        entityManger.flush();
 
         assertThat(savedPerson.getId()).isEqualTo(1L);
     }
@@ -125,6 +124,7 @@ class EntityMangerImplTest extends H2DBTestSupport {
     void throwWhenEntityAlreadyExist() {
         Person person = new Person(null, "nick_name", 10, "df", null);
         Person saved = (Person) entityManger.persist(person);
+        entityManger.flush();
 
         assertThrows(EntityAlreadyExistsException.class, () -> {
             entityManger.persist(saved);
@@ -190,7 +190,7 @@ class EntityMangerImplTest extends H2DBTestSupport {
                 persistenceContext,
                 entityEntryContext,
                 new EntityEntryCountProxyFactory(),
-                mockMetamodel
+                new EventListenerRegistryImpl(mockMetamodel)
         );
         Person person = new Person(null, "nick_name", 10, "test@test.com", null);
         Person saved = (Person) sut.persist(person);
@@ -208,7 +208,7 @@ class EntityMangerImplTest extends H2DBTestSupport {
                 persistenceContext,
                 entityEntryContext,
                 new EntityEntryCountProxyFactory(),
-                metaModel
+                new EventListenerRegistryImpl(metaModel)
         );
         Person person = new Person(null, "nick_name", 10, "test@test.com", null);
         sut.persist(person);
@@ -257,5 +257,35 @@ class EntityMangerImplTest extends H2DBTestSupport {
         entityManger.remove(saved);
 
         assertThat(entityEntryContext.getEntry(EntityKey.fromEntity(person)).getStatus()).isEqualTo(Status.GONE);
+    }
+
+    @DisplayName("flush 하기전에는 쿼리를 실행하지 않는다.")
+    @Test
+    void doNotExecuteQueryBeforeFlush() throws Exception {
+        Person person = new Person(null, "nick_name", 10, "df", null);
+        entityManger.persist(person);
+
+        Object entityFromContext = persistenceContext.getEntity(EntityKey.fromEntity(person));
+
+        assertSoftly(softly -> {
+           softly.assertThat(entityFromContext).isNotNull();
+           softly.assertThatThrownBy(() -> {
+               jdbcTemplate.queryForObject("select * from users", rs -> new Person());
+           });
+        });
+    }
+
+    @DisplayName("flush 할시 쿼리를 실행한다")
+    @Test
+    void executeQueryWhenFlush() throws Exception {
+        Person person = new Person(null, "nick_name", 10, "df", null);
+        entityManger.persist(person);
+
+        entityManger.flush();
+
+        Person foundPerson = jdbcTemplate.queryForObject("select * from users", rs -> new Person());
+        assertSoftly(softly -> {
+            softly.assertThat(foundPerson).isNotNull();
+        });
     }
 }

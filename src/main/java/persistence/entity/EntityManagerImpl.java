@@ -1,101 +1,86 @@
 package persistence.entity;
 
-import persistence.bootstrap.MetaModel;
-import persistence.entity.context.*;
-import persistence.entity.exception.EntityAlreadyExistsException;
-import persistence.entity.exception.EntityNotExistsException;
-import persistence.entity.exception.EntityReadOnlyException;
+import persistence.action.ActionQueue;
+import persistence.entity.context.EntityEntryContext;
+import persistence.entity.context.EntityEntryFactory;
+import persistence.entity.context.PersistenceContext;
+import persistence.event.*;
+import persistence.event.listener.DeleteEventListener;
+import persistence.event.listener.LoadEventListener;
+import persistence.event.listener.MergeEventListener;
+import persistence.event.listener.PersistEventListener;
 
 public class EntityManagerImpl implements EntityManager {
-    private final MetaModel metaModel;
     private final PersistenceContext persistenceContext;
     private final EntityEntryContext entityEntryContext;
     private final EntityEntryFactory entityEntryFactory;
-
+    private final EventListenerRegistry eventListenerRegistry;
+    private final ActionQueue actionQueue = new ActionQueue();
 
     public EntityManagerImpl(
             PersistenceContext persistenceContext,
             EntityEntryContext entityEntryContext,
             EntityEntryFactory entityEntryFactory,
-            MetaModel metaModel
+            EventListenerRegistry eventListenerRegistry
     ) {
         this.persistenceContext = persistenceContext;
         this.entityEntryContext = entityEntryContext;
         this.entityEntryFactory = entityEntryFactory;
-        this.metaModel = metaModel;
+        this.eventListenerRegistry = eventListenerRegistry;
     }
 
     @Override
     public <T> T find(Class<T> clazz, Object id) {
-        EntityKey entityKey = new EntityKey(clazz, id);
-        Object cachedEntity = persistenceContext.getEntity(entityKey);
-
-        if(cachedEntity != null) {
-            return (T) cachedEntity;
-        }
-
-        EntityEntry entityEntry = entityEntryFactory.createEntityEntry(Status.LOADING);
-        entityEntryContext.addEntry(entityKey, entityEntry);
-
-        T foundEntity = metaModel.getEntityLoader(clazz).find(id);
-        persistenceContext.addEntity(entityKey, foundEntity);
-
-        entityEntry.setManaged();
-
-        return foundEntity;
+        LoadEvent loadEvent = new LoadEvent(clazz, id, persistenceContext, entityEntryContext, entityEntryFactory);
+        LoadEventListener eventListener = (LoadEventListener) eventListenerRegistry.getEventListener(EventType.LOAD);
+        return eventListener.onLoad(loadEvent);
     }
 
     @Override
     public Object persist(Object entity) {
-        EntityKey entityKey = EntityKey.fromEntity(entity);
-        if(entityKey.hasId()) {
-            throw new EntityAlreadyExistsException(entityKey);
-        }
+        PersistEvent event = new PersistEvent(
+                entity,
+                persistenceContext,
+                entityEntryContext,
+                entityEntryFactory,
+                actionQueue
+        );
+        PersistEventListener eventListener =
+                (PersistEventListener) eventListenerRegistry.getEventListener(EventType.PERSIST);
 
-        // TODO: entityEntry 에 SAVING 상태로 등록. id 가 없는데 어떻게?
-
-        metaModel.getEntityPersister(entity.getClass()).insert(entity);
-        entityKey = EntityKey.fromEntity(entity);
-        persistenceContext.addEntity(entityKey, entity);
-        EntityEntry entityEntry = entityEntryFactory.createEntityEntry(Status.MANAGED);
-        entityEntryContext.addEntry(entityKey, entityEntry);
-
-        return entity;
+        return eventListener.onPersist(event);
     }
 
     @Override
     public Object merge(Object entity) {
-        EntityKey entityKey = EntityKey.fromEntity(entity);
-        EntityEntry entityEntry = entityEntryContext.getEntry(entityKey);
+        MergeEvent mergeEvent = new MergeEvent(
+                entity,
+                persistenceContext,
+                entityEntryContext,
+                actionQueue
+        );
+        MergeEventListener eventListener =
+                (MergeEventListener) eventListenerRegistry.getEventListener(EventType.MERGE);
 
-        if(entityEntry == null || persistenceContext.getEntity(entityKey) == null) {
-            throw new EntityNotExistsException(entityKey);
-        }
-
-        if(entityEntry.isReadOnly()){
-            throw new EntityReadOnlyException(entityKey);
-        }
-
-        if(!persistenceContext.isDirty(entityKey, entity)) {
-            return entity;
-        }
-
-        entityEntry.setSaving();
-        metaModel.getEntityPersister(entity.getClass()).update(entity);
-        persistenceContext.addEntity(entityKey, entity);
-        entityEntry.setManaged();
-
-        return entity;
+        return eventListener.onMerge(mergeEvent);
     }
 
     @Override
     public void remove(Object entity) {
-        EntityKey entityKey = EntityKey.fromEntity(entity);
-        EntityEntry entityEntry = entityEntryContext.getEntry(entityKey);
+        DeleteEvent deleteEvent = new DeleteEvent(
+                entity,
+                persistenceContext,
+                entityEntryContext,
+                actionQueue
+        );
+        DeleteEventListener eventListener =
+                (DeleteEventListener) eventListenerRegistry.getEventListener(EventType.DELETE);
 
-        entityEntry.setDeleted();
-        metaModel.getEntityPersister(entity.getClass()).delete(entity);
-        persistenceContext.removeEntity(entity);
-        entityEntry.setGone();
+        eventListener.onDelete(deleteEvent);
+    }
+
+    @Override
+    public void flush() {
+        actionQueue.executeActions();
     }
 }
